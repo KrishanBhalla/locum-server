@@ -10,6 +10,7 @@ require (
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/golang/glog v1.2.0 // indirect
+	github.com/oapi-codegen/runtime v1.1.1 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 )
 

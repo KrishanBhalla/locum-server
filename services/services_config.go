@@ -20,7 +20,7 @@ func withBadger(dbPath string) (*badger.DB, error) {
 // WithUser returns a ServicesConfig object that sets a user
 func WithUser() ServicesConfig {
 	return func(s *Services) error {
-		db, err := withBadger("users")
+		db, err := withBadger("badger/users")
 		if err != nil {
 			return err
 		}
@@ -32,7 +32,7 @@ func WithUser() ServicesConfig {
 // WithUserFriends returns a ServicesConfig object that sets a user
 func WithUserFriends() ServicesConfig {
 	return func(s *Services) error {
-		db, err := withBadger("userFriends")
+		db, err := withBadger("badger/userFriends")
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func WithUserFriends() ServicesConfig {
 // WithUserLocation returns a ServicesConfig object that sets a user
 func WithUserLocation() ServicesConfig {
 	return func(s *Services) error {
-		db, err := withBadger("userLocation")
+		db, err := withBadger("badger/userLocation")
 		if err != nil {
 			return err
 		}

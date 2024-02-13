@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
-	"github.com/KrishanBhalla/locum-server/routes"
+	"github.com/KrishanBhalla/locum-server/api"
+	"github.com/KrishanBhalla/locum-server/api/spec"
+	"github.com/KrishanBhalla/locum-server/middleware"
 	"github.com/KrishanBhalla/locum-server/services"
 	"github.com/KrishanBhalla/locum-server/services/websocket_service"
 	"github.com/go-chi/chi"
+	chiMw "github.com/go-chi/chi/middleware"
 )
 
 const (
@@ -21,8 +25,6 @@ func isProd() bool {
 
 func main() {
 
-	r := chi.NewRouter()
-
 	services, err := services.NewServices(
 		services.WithUser(),
 		services.WithUserFriends(),
@@ -30,6 +32,19 @@ func main() {
 	)
 	defer services.Close()
 	must(err)
+
+	r := chi.NewRouter()
+
+	// A good base middleware stack
+	r.Use(chiMw.RequestID)
+	r.Use(chiMw.RealIP)
+	r.Use(chiMw.Logger)
+	r.Use(chiMw.Recoverer)
+	// Set a timeout value on the request context (ctx), that will signal
+	// through ctx.Done() that the request has timed out and further
+	// processing should be stopped.
+	r.Use(chiMw.Timeout(60 * time.Second))
+	r.Use(middleware.AddServices(services))
 
 	setupRoutes(r, *services)
 
@@ -45,15 +60,7 @@ func setupRoutes(r *chi.Mux, services services.Services) {
 	r.MethodFunc(http.MethodGet, "/updateLocationWs", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		serveWs(w, r, &services)
 	}))
-
-	// Users
-	r.MethodFunc(http.MethodPost, "/login", func(w http.ResponseWriter, r *http.Request) {
-		routes.SignupOrLogin(services, w, r)
-	})
-
-	r.MethodFunc(http.MethodPost, "/friends", func(w http.ResponseWriter, r *http.Request) {
-		routes.FindFriends(services, w, r)
-	})
+	r.Mount("/api", spec.Handler(spec.NewStrictHandler(&api.ServerImpl{}, []spec.StrictMiddlewareFunc{})))
 
 }
 

@@ -1,0 +1,6 @@
+package: spec
+output: api/spec/server.gen.go
+generate:
+  models: true
+  strict-server: true
+  chi-server: true # compatible with net/http

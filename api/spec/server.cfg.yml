@@ -1,0 +1,214 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Locum Server
+  description: OpenAPI 3.0 config for Locum Server
+  contact:
+    name: Krishan Bhalla
+    email: krishanbhallaoffice@gmail.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: localhost:8080/api
+paths:
+  /users:
+    post:
+      description: |
+        Returns all users from the server
+      operationId: findUsers
+      requestBody:
+        description: User prefix to seerch
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: User Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        default:
+          description: unexpected error
+    
+  /login:
+    post:
+      description: |
+        Login or sign up
+      operationId: loginOrSignup
+      requestBody:
+        description: User to add
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'  
+      responses:
+        '200':
+          description: Login Success
+        default:
+          description: unexpected error
+   
+  /followers:
+    get:
+        description: |
+          Find all followers
+        operationId: findFollowers
+        requestBody:
+          description: User to find the followers of
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindFriendsRequest'
+        responses:
+          '200':
+            description: Find Followers Response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/FindFriendsResponse'
+          default:
+            description: unexpected error
+    delete:
+      description: deletes a single follower based on the userId and followerId supplied
+      operationId: deleteFollower
+      requestBody:
+        description: Follower/User pair to delete
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteFollowerRequest'
+      responses:
+        '204':
+          description: follower deleted
+        default:
+          description: unexpected error
+  /following:
+    get:
+        description: |
+          Find all following
+        operationId: findFollowing
+        requestBody:
+          description: User to find the following of
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindFriendsRequest'
+        responses:
+          '200':
+            description: Find Following Response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/FindFriendsResponse'
+          default:
+            description: unexpected error
+    delete:
+      description: deletes a single follower based on the userId and followerId supplied
+      operationId: deleteFollowing
+      requestBody:
+        description: Following/User pair to delete
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteFollowerRequest'
+      responses:
+        '204':
+          description: follower deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+# Users
+  schemas:
+
+    UserRequest:
+      type: object
+      required:
+        - queryString  
+      properties:
+        queryString:
+          type: string
+    UserResponse:
+      type: object
+      required:
+        - userId
+        - fullName
+      properties:
+        userId:
+          type: string
+        fullName:
+          type: string
+# Login
+    LoginRequest:
+      type: object
+      required:
+        - userId  
+      properties:
+        userId:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string  
+# Friends
+    FindFriendsRequest:
+      type: object
+      required:
+        - userId  
+      properties:
+        userId:
+          type: string
+  
+    FindFriendsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserResponse'
+
+# Followers
+    DeleteFollowerRequest:
+      type: object
+      required:
+        - userId  
+        - followerUserId
+      properties:
+        userId:
+          type: string
+        followerUserId:
+          type: string
+# Following
+    DeleteFollowingRequest:
+      type: object
+      required:
+        - userId  
+        - followingUserId
+      properties:
+        userId:
+          type: string
+        followingUserId:
+          type: string
+# Errors
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
