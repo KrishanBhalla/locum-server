@@ -14,18 +14,18 @@ import (
 )
 
 func SignupOrLogin(ctx context.Context, request spec.LoginOrSignupRequestObject) (spec.LoginOrSignupResponseObject, error) {
-
+	// setup
 	req := request.Body
 
 	services, ok := services.FromContext(ctx)
 	reqId := chiMw.GetReqID(ctx)
 	internalServerError := spec.LoginOrSignupdefaultResponse{StatusCode: http.StatusInternalServerError}
-
 	if !ok {
 		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
 	}
-
 	userService := services.User
+
+	// Process
 	user, err := userService.ByID(req.UserId)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, err

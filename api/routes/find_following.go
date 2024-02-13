@@ -13,8 +13,6 @@ import (
 
 func FindFollowing(ctx context.Context, request spec.FindFollowingRequestObject) (spec.FindFollowingResponseObject, error) {
 	/// setup
-	req := request.Body
-
 	services, ok := services.FromContext(ctx)
 	reqId := chiMw.GetReqID(ctx)
 	internalServerError := spec.FindFollowingdefaultResponse{StatusCode: http.StatusInternalServerError}
@@ -24,7 +22,7 @@ func FindFollowing(ctx context.Context, request spec.FindFollowingRequestObject)
 
 	// Process
 
-	friends, err := services.UserFriends.ByUserID(req.UserId)
+	friends, err := services.UserFriends.ByUserID(request.Body.UserId)
 	if err != nil {
 		return internalServerError, err
 	}
