@@ -26,6 +26,29 @@ func lookupByKey(db *badger.DB, key string, data []byte) ([]byte, error) {
 	return data, nil
 }
 
+func lookupByPrefix(db *badger.DB, prefix []byte, data []byte) ([]byte, error) {
+	err := db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			item := it.Item()
+			err := item.Value(func(v []byte) error {
+				data = append(data, v...)
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func appendToSliceWithoutDuplicates(oldElements []string, newSlice ...string) []string {
 	seen := make(map[string]bool)
 	for _, v := range oldElements {

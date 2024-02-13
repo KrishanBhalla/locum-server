@@ -55,7 +55,8 @@ paths:
           description: unexpected error
    
   /followers:
-    get:
+  
+    post:
         description: |
           Find all followers
         operationId: findFollowers
@@ -90,8 +91,9 @@ paths:
           description: follower deleted
         default:
           description: unexpected error
+  
   /following:
-    get:
+    post:
         description: |
           Find all following
         operationId: findFollowing
@@ -120,17 +122,70 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeleteFollowerRequest'
+              $ref: '#/components/schemas/DeleteFollowingRequest'
       responses:
         '204':
           description: follower deleted
         default:
           description: unexpected error
+  
+  /following/locations:
+    post:
+      description: | 
+        Find the locations of all followed users
+      operationId: updateLocationsOfFollowedUsers
+      requestBody:
+        description: User for whom we will find the location of their followign
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFollowedUserLocationsRequest'
+      responses:
+        '200':
+          description: Find Following Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/UpdateFollowedUserLocationsResponse'
+        default:
+          description: unexpected error
 
+  /follow/reqeust:
+    post:
+        description: |
+          Follow a new user
+        operationId: createFollowRequest
+        requestBody:
+          description: User to follow
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowRequestRequest'
+        responses:
+          '200':
+            description: Follow Request Response
+          default:
+            description: unexpected error
+  /follow/response:
+    post:
+        description: |
+          Accept or reject a follow request
+        operationId: updateFollowRequest
+        requestBody:
+          description: Accepted or denied follow request
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowResponseRequest'
+        responses:
+          '200':
+            description: Follow Response Response
+          default:
+            description: unexpected error
+  
 components:
 # Users
   schemas:
@@ -142,6 +197,7 @@ components:
       properties:
         queryString:
           type: string
+
     UserResponse:
       type: object
       required:
@@ -152,6 +208,25 @@ components:
           type: string
         fullName:
           type: string
+
+    UserLocation:
+      type: object
+      description: The location of a user with a timestamp given in epoch millis
+      required:
+        - userId
+        - latitude
+        - longitude
+        - timestamp
+      properties:
+        userId:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        timestamp:
+          type: integer
+          format: int64
 # Login
     LoginRequest:
       type: object
@@ -200,6 +275,45 @@ components:
           type: string
         followingUserId:
           type: string
+# UpdateFollowedUserLocations
+    UpdateFollowedUserLocationsRequest:
+      type: object
+      required:
+        - userId  
+      properties:
+        userId:
+          type: string
+    UpdateFollowedUserLocationsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserLocation'
+
+# FollowRequestRequest
+    FollowRequestRequest:
+      type: object
+      required:
+        - userId
+        - followingUserId
+      properties:
+        userId:
+          type: string
+        followingUserId:
+          type: string
+
+# FollowResponseRequest
+    FollowResponseRequest:
+      type: object
+      required:
+        - userId
+        - requestedFollowerUserId
+        - accept
+      properties:
+        userId:
+          type: string
+        requestedFollowerUserId:
+          type: string
+        accept:
+          type: boolean
 # Errors
     Error:
       type: object

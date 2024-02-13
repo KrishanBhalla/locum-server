@@ -2,14 +2,22 @@ package models
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/dgraph-io/badger"
 )
 
+type FollowRequest struct {
+	UserId    string    `json:"userId"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
 type UserFriends struct {
-	UserId           string   `json:"id"`
-	FollowerUserIds  []string `json:"followerUserIds"`
-	FollowingUserIds []string `json:"followingUserIds"`
+	UserId           string          `json:"id"`
+	FollowerUserIds  []string        `json:"followerUserIds"`
+	FollowingUserIds []string        `json:"followingUserIds"`
+	FollowerRequests []FollowRequest `json:"followerRequests"`
+	FollowRequests   []FollowRequest `json:"followRequests"`
 }
 
 type UserFriendsDB interface {
@@ -19,9 +27,9 @@ type UserFriendsDB interface {
 	Create(userFriends UserFriends) error
 	Append(userFriends UserFriends) error
 	RemoveFollower(userId, followerUserId string) error
-	RemoveFollowing(userId, followerId string) error
+	RemoveFollowing(userId, followingUserId string) error
 	Update(userFriends UserFriends) error
-	Delete(userFriendsId string) error
+	Delete(userId string) error
 	DbCloser
 }
 
@@ -82,12 +90,13 @@ func (db *userFriendsDB) Delete(userId string) error {
 
 func (db *userFriendsDB) Append(userFriends UserFriends) error {
 
-	followers, err := db.ByUserID(userFriends.UserId)
+	friends, err := db.ByUserID(userFriends.UserId)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return err
 	}
 
-	userFriends.FollowerUserIds = appendToSliceWithoutDuplicates(followers.FollowerUserIds, userFriends.FollowerUserIds...)
+	userFriends.FollowerUserIds = appendToSliceWithoutDuplicates(friends.FollowerUserIds, userFriends.FollowerUserIds...)
+	userFriends.FollowingUserIds = appendToSliceWithoutDuplicates(friends.FollowingUserIds, userFriends.FollowingUserIds...)
 	return db.Update(userFriends)
 }
 

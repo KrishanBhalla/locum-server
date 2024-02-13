@@ -17,6 +17,7 @@ type User struct {
 
 type UserDB interface {
 	ByID(userId string) (User, error)
+	Query(queryString string) ([]User, error)
 
 	// Methods for altering contents
 	Create(user User) error
@@ -105,6 +106,22 @@ func (db *userDB) Update(user User) error {
 		return err
 	})
 	return err
+}
+
+// Query implements UserDB.
+func (db *userDB) Query(queryString string) ([]User, error) {
+	users := make([]User, 0, 0)
+	var data = make([]byte, 0)
+	var queryBytes []byte = []byte(queryString)
+	data, err := lookupByPrefix(db.db, queryBytes, data)
+	if err != nil {
+		return users, err
+	}
+	err = json.Unmarshal(data, &users)
+	if err != nil {
+		return users, err
+	}
+	return users, nil
 }
 
 func (db *userDB) CloseDB() error {
