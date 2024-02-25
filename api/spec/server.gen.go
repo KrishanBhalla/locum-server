@@ -92,6 +92,9 @@ type DeleteFollowerJSONRequestBody = DeleteFollowerRequest
 // FindFollowersJSONRequestBody defines body for FindFollowers for application/json ContentType.
 type FindFollowersJSONRequestBody = FindFriendsRequest
 
+// FindFollowerRequestsJSONRequestBody defines body for FindFollowerRequests for application/json ContentType.
+type FindFollowerRequestsJSONRequestBody = FindFriendsRequest
+
 // DeleteFollowingJSONRequestBody defines body for DeleteFollowing for application/json ContentType.
 type DeleteFollowingJSONRequestBody = DeleteFollowingRequest
 
@@ -110,7 +113,7 @@ type FindUsersJSONRequestBody = UserRequest
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (POST /follow/reqeust)
+	// (POST /follow/request)
 	CreateFollowRequest(w http.ResponseWriter, r *http.Request)
 
 	// (POST /follow/response)
@@ -121,6 +124,9 @@ type ServerInterface interface {
 
 	// (POST /followers)
 	FindFollowers(w http.ResponseWriter, r *http.Request)
+
+	// (POST /followers/requests)
+	FindFollowerRequests(w http.ResponseWriter, r *http.Request)
 
 	// (DELETE /following)
 	DeleteFollowing(w http.ResponseWriter, r *http.Request)
@@ -142,7 +148,7 @@ type ServerInterface interface {
 
 type Unimplemented struct{}
 
-// (POST /follow/reqeust)
+// (POST /follow/request)
 func (_ Unimplemented) CreateFollowRequest(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
@@ -159,6 +165,11 @@ func (_ Unimplemented) DeleteFollower(w http.ResponseWriter, r *http.Request) {
 
 // (POST /followers)
 func (_ Unimplemented) FindFollowers(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /followers/requests)
+func (_ Unimplemented) FindFollowerRequests(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -247,6 +258,21 @@ func (siw *ServerInterfaceWrapper) FindFollowers(w http.ResponseWriter, r *http.
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.FindFollowers(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// FindFollowerRequests operation middleware
+func (siw *ServerInterfaceWrapper) FindFollowerRequests(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.FindFollowerRequests(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -445,7 +471,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/follow/reqeust", wrapper.CreateFollowRequest)
+		r.Post(options.BaseURL+"/follow/request", wrapper.CreateFollowRequest)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/follow/response", wrapper.UpdateFollowRequest)
@@ -455,6 +481,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/followers", wrapper.FindFollowers)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/followers/requests", wrapper.FindFollowerRequests)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/following", wrapper.DeleteFollowing)
@@ -572,6 +601,32 @@ type FindFollowersdefaultResponse struct {
 }
 
 func (response FindFollowersdefaultResponse) VisitFindFollowersResponse(w http.ResponseWriter) error {
+	w.WriteHeader(response.StatusCode)
+	return nil
+}
+
+type FindFollowerRequestsRequestObject struct {
+	Body *FindFollowerRequestsJSONRequestBody
+}
+
+type FindFollowerRequestsResponseObject interface {
+	VisitFindFollowerRequestsResponse(w http.ResponseWriter) error
+}
+
+type FindFollowerRequests200JSONResponse FindFriendsResponse
+
+func (response FindFollowerRequests200JSONResponse) VisitFindFollowerRequestsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type FindFollowerRequestsdefaultResponse struct {
+	StatusCode int
+}
+
+func (response FindFollowerRequestsdefaultResponse) VisitFindFollowerRequestsResponse(w http.ResponseWriter) error {
 	w.WriteHeader(response.StatusCode)
 	return nil
 }
@@ -707,7 +762,7 @@ func (response FindUsersdefaultResponse) VisitFindUsersResponse(w http.ResponseW
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
-	// (POST /follow/reqeust)
+	// (POST /follow/request)
 	CreateFollowRequest(ctx context.Context, request CreateFollowRequestRequestObject) (CreateFollowRequestResponseObject, error)
 
 	// (POST /follow/response)
@@ -718,6 +773,9 @@ type StrictServerInterface interface {
 
 	// (POST /followers)
 	FindFollowers(ctx context.Context, request FindFollowersRequestObject) (FindFollowersResponseObject, error)
+
+	// (POST /followers/requests)
+	FindFollowerRequests(ctx context.Context, request FindFollowerRequestsRequestObject) (FindFollowerRequestsResponseObject, error)
 
 	// (DELETE /following)
 	DeleteFollowing(ctx context.Context, request DeleteFollowingRequestObject) (DeleteFollowingResponseObject, error)
@@ -881,6 +939,37 @@ func (sh *strictHandler) FindFollowers(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(FindFollowersResponseObject); ok {
 		if err := validResponse.VisitFindFollowersResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// FindFollowerRequests operation middleware
+func (sh *strictHandler) FindFollowerRequests(w http.ResponseWriter, r *http.Request) {
+	var request FindFollowerRequestsRequestObject
+
+	var body FindFollowerRequestsJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.FindFollowerRequests(ctx, request.(FindFollowerRequestsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "FindFollowerRequests")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(FindFollowerRequestsResponseObject); ok {
+		if err := validResponse.VisitFindFollowerRequestsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

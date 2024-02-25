@@ -92,6 +92,29 @@ paths:
         default:
           description: unexpected error
   
+  /followers/requests:
+  
+    post:
+        description: |
+          Find all followers
+        operationId: findFollowerRequests
+        requestBody:
+          description: User to find the follower requests of
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindFriendsRequest'
+        responses:
+          '200':
+            description: Find Follow Request Response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/FindFriendsResponse'
+          default:
+            description: unexpected error
+  
   /following:
     post:
         description: |
@@ -151,7 +174,7 @@ paths:
         default:
           description: unexpected error
 
-  /follow/reqeust:
+  /follow/request:
     post:
         description: |
           Follow a new user
@@ -168,6 +191,7 @@ paths:
             description: Follow Request Response
           default:
             description: unexpected error
+  
   /follow/response:
     post:
         description: |

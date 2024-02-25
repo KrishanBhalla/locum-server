@@ -10,19 +10,24 @@ import (
 type ServerImpl struct {
 }
 
+// FindFollowerRequestss implements spec.StrictServerInterface.
+func (*ServerImpl) FindFollowerRequests(ctx context.Context, request spec.FindFollowerRequestsRequestObject) (spec.FindFollowerRequestsResponseObject, error) {
+	return routes.FindFollowerRequests(ctx, request)
+}
+
 // CreateFollowRequest implements spec.StrictServerInterface.
 func (*ServerImpl) CreateFollowRequest(ctx context.Context, request spec.CreateFollowRequestRequestObject) (spec.CreateFollowRequestResponseObject, error) {
-	panic("unimplemented")
+	return routes.CreateFollowRequest(ctx, request)
 }
 
 // UpdateFollowRequest implements spec.StrictServerInterface.
 func (*ServerImpl) UpdateFollowRequest(ctx context.Context, request spec.UpdateFollowRequestRequestObject) (spec.UpdateFollowRequestResponseObject, error) {
-	panic("unimplemented")
+	return routes.UpdateFollowRequest(ctx, request)
 }
 
 // UpdateLocationsOfFollowedUsers implements spec.StrictServerInterface.
 func (*ServerImpl) UpdateLocationsOfFollowedUsers(ctx context.Context, request spec.UpdateLocationsOfFollowedUsersRequestObject) (spec.UpdateLocationsOfFollowedUsersResponseObject, error) {
-	panic("unimplemented")
+	return routes.UpdateLocationsOfFollowedUsers(ctx, request)
 }
 
 // DeleteFollower implements spec.StrictServerInterface.

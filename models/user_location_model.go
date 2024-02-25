@@ -8,8 +8,8 @@ import (
 )
 
 type GeoTime struct {
-	Latitude  string    `json:"latitude"`
-	Longitude string    `json:"longitude"`
+	Latitude  float32   `json:"latitude"`
+	Longitude float32   `json:"longitude"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
