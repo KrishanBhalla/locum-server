@@ -111,15 +111,21 @@ func (db *userDB) Update(user User) error {
 // Query implements UserDB.
 func (db *userDB) Query(queryString string) ([]User, error) {
 	users := make([]User, 0, 0)
-	var data = make([]byte, 0)
+	var data = make([][]byte, 0)
 	var queryBytes []byte = []byte(queryString)
 	data, err := lookupByPrefix(db.db, queryBytes, data)
 	if err != nil {
 		return users, err
 	}
-	err = json.Unmarshal(data, &users)
-	if err != nil {
-		return users, err
+	if len(data) == 0 {
+		return users, nil
+	}
+	for _, d := range data {
+		user := &User{}
+		err = json.Unmarshal(d, user)
+		if err == nil {
+			users = append(users, *user)
+		}
 	}
 	return users, nil
 }

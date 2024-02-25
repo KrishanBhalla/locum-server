@@ -60,6 +60,10 @@ func setupRoutes(r *chi.Mux, services services.Services) {
 	r.MethodFunc(http.MethodGet, "/updateLocationWs", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		serveWs(w, r, &services)
 	}))
+
+	r.MethodFunc(http.MethodGet, "/test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Successful test")
+	}))
 	r.Mount("/api", spec.Handler(spec.NewStrictHandler(&api.ServerImpl{}, []spec.StrictMiddlewareFunc{})))
 
 }
