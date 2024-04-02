@@ -2,31 +2,32 @@ package routes
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/KrishanBhalla/locum-server/api/spec"
-	"github.com/KrishanBhalla/locum-server/services"
-	chiMw "github.com/go-chi/chi/middleware"
 )
 
 func UpdateFriendRequest(ctx context.Context, request spec.UpdateFriendRequestRequestObject) (spec.UpdateFriendRequestResponseObject, error) {
 
-	services, ok := services.FromContext(ctx)
-	reqId := chiMw.GetReqID(ctx)
 	internalServerError := spec.UpdateFriendRequestdefaultResponse{StatusCode: http.StatusInternalServerError}
-	if !ok {
-		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
+
+	services, err := validateServices(ctx)
+	if err != nil {
+		return internalServerError, err
+	}
+
+	userToken, err := validateToken(ctx, services)
+	if err != nil {
+		return spec.UnauthorizedErrorResponse{}, err
 	}
 
 	// Process
-	userId := request.Body.UserId
+	userId := userToken.UserId
 	requestingUser := request.Body.FriendId
 	requestAccepted := request.Body.Accept
 
 	userFriends := services.UserFriends
-	var err error
+
 	if requestAccepted {
 		err = userFriends.AddFriend(userId, requestingUser)
 	}

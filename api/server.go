@@ -10,44 +10,34 @@ import (
 type ServerImpl struct {
 }
 
-// FindFollowerRequestss implements spec.StrictServerInterface.
-func (*ServerImpl) FindFollowerRequests(ctx context.Context, request spec.FindFollowerRequestsRequestObject) (spec.FindFollowerRequestsResponseObject, error) {
-	return routes.FindFollowerRequests(ctx, request)
+// FindFriendRequests implements spec.StrictServerInterface.
+func (*ServerImpl) GetFriendRequests(ctx context.Context, request spec.GetFriendRequestsRequestObject) (spec.GetFriendRequestsResponseObject, error) {
+	return routes.GetFriendRequests(ctx, request)
 }
 
-// CreateFollowRequest implements spec.StrictServerInterface.
-func (*ServerImpl) CreateFollowRequest(ctx context.Context, request spec.CreateFollowRequestRequestObject) (spec.CreateFollowRequestResponseObject, error) {
-	return routes.CreateFollowRequest(ctx, request)
+// CreateFriendRequest implements spec.StrictServerInterface.
+func (*ServerImpl) CreateFriendRequest(ctx context.Context, request spec.CreateFriendRequestRequestObject) (spec.CreateFriendRequestResponseObject, error) {
+	return routes.CreateFriendRequest(ctx, request)
 }
 
-// UpdateFollowRequest implements spec.StrictServerInterface.
-func (*ServerImpl) UpdateFollowRequest(ctx context.Context, request spec.UpdateFollowRequestRequestObject) (spec.UpdateFollowRequestResponseObject, error) {
-	return routes.UpdateFollowRequest(ctx, request)
+// UpdateFriendRequest implements spec.StrictServerInterface.
+func (*ServerImpl) UpdateFriendRequest(ctx context.Context, request spec.UpdateFriendRequestRequestObject) (spec.UpdateFriendRequestResponseObject, error) {
+	return routes.UpdateFriendRequest(ctx, request)
 }
 
-// UpdateLocationsOfFollowedUsers implements spec.StrictServerInterface.
-func (*ServerImpl) GetLocationsOfFriends(ctx context.Context, request spec.UpdateLocationsOfFollowedUsersRequestObject) (spec.UpdateLocationsOfFollowedUsersResponseObject, error) {
-	return routes.GetLocationsOfFriends(ctx, request)
+// UpdateLocationsOfFriendedUsers implements spec.StrictServerInterface.
+func (*ServerImpl) GetLocationsOfFriends(ctx context.Context, request spec.GetLocationsOfFriendsRequestObject) (spec.GetLocationsOfFriendsResponseObject, error) {
+	return routes.GetLocationsOfFriends(ctx)
 }
 
-// DeleteFollower implements spec.StrictServerInterface.
-func (*ServerImpl) DeleteFollower(ctx context.Context, request spec.DeleteFollowerRequestObject) (spec.DeleteFollowerResponseObject, error) {
-	return routes.DeleteFollower(ctx, request)
+// DeleteFriend implements spec.StrictServerInterface.
+func (*ServerImpl) DeleteFriend(ctx context.Context, request spec.DeleteFriendRequestObject) (spec.DeleteFriendResponseObject, error) {
+	return routes.DeleteFriend(ctx, request)
 }
 
-// DeleteFollowing implements spec.StrictServerInterface.
-func (*ServerImpl) DeleteFollowing(ctx context.Context, request spec.DeleteFollowingRequestObject) (spec.DeleteFollowingResponseObject, error) {
-	return routes.DeleteFollowing(ctx, request)
-}
-
-// FindFollowers implements spec.StrictServerInterface.
-func (*ServerImpl) FindFollowers(ctx context.Context, request spec.FindFollowersRequestObject) (spec.FindFollowersResponseObject, error) {
-	return routes.FindFollowers(ctx, request)
-}
-
-// FindFollowing implements spec.StrictServerInterface.
-func (*ServerImpl) FindFollowing(ctx context.Context, request spec.FindFollowingRequestObject) (spec.FindFollowingResponseObject, error) {
-	return routes.FindFollowing(ctx, request)
+// FindFriends implements spec.StrictServerInterface.
+func (*ServerImpl) GetFriends(ctx context.Context, request spec.GetFriendsRequestObject) (spec.GetFriendsResponseObject, error) {
+	return routes.GetFriends(ctx, request)
 }
 
 // FindUsers implements spec.StrictServerInterface.

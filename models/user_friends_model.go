@@ -113,12 +113,7 @@ func (db *userFriendsDB) Delete(userId string) error {
 	}
 
 	err = db.db.Update(func(txn *badger.Txn) error {
-
-		userFriendsBytes, err := json.Marshal(userFriends)
-		if err != nil {
-			return err
-		}
-		err = txn.Set([]byte(userFriends.UserId), userFriendsBytes)
+		err := txn.Delete([]byte(userFriends.UserId))
 		return err
 	})
 	return err

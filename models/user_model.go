@@ -1,7 +1,6 @@
 package models
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"strings"
 	"time"
@@ -10,12 +9,11 @@ import (
 )
 
 type User struct {
-	Id             string    `json:"id"`
-	Email          string    `json:"email"`
-	FullName       string    `json:"fullName"`
-	LastLoginTime  time.Time `json:"lastLoginTime"`
-	CreationTime   time.Time `json:"creationTime"`
-	ShareableToken []byte    `json:"shareableToken"`
+	Id            string    `json:"id"`
+	Email         string    `json:"email"`
+	FullName      string    `json:"fullName"`
+	LastLoginTime time.Time `json:"lastLoginTime"`
+	CreationTime  time.Time `json:"creationTime"`
 }
 
 type UserDB interface {
@@ -23,7 +21,7 @@ type UserDB interface {
 	Query(queryString string) ([]User, error)
 
 	// Methods for altering contents
-	Create(user User) (string, error)
+	Create(user User) error
 	Update(user User) error
 	Delete(userId string) error
 	DbCloser
@@ -57,16 +55,12 @@ func (db *userDB) ByID(userId string) (User, error) {
 }
 
 // Create implements UserDB.
-func (db *userDB) Create(user User) (string, error) {
+func (db *userDB) Create(user User) error {
 	err := db.Update(user)
 	if err != nil {
-		return "", err
+		return err
 	}
-	user, err = db.ByID(user.Id)
-	if err != nil {
-		return "", err
-	}
-	return user.Id, nil
+	return nil
 }
 
 // Delete implements UserDB.
@@ -81,12 +75,7 @@ func (db *userDB) Delete(userId string) error {
 	}
 
 	err = db.db.Update(func(txn *badger.Txn) error {
-
-		userBytes, err := json.Marshal(user)
-		if err != nil {
-			return err
-		}
-		err = txn.Set([]byte(user.Id), userBytes)
+		err := txn.Delete([]byte(user.Id))
 		return err
 	})
 	return err
@@ -105,11 +94,6 @@ func (db *userDB) Update(user User) error {
 	} else {
 		user.CreationTime = time.Now()
 		user.LastLoginTime = user.CreationTime
-	}
-
-	if user.ShareableToken == nil {
-		token := sha256.New().Sum([]byte(user.Id))
-		user.ShareableToken = token
 	}
 
 	err = db.db.Update(func(txn *badger.Txn) error {
@@ -155,42 +139,6 @@ func (db *userDB) Query(queryString string) ([]User, error) {
 		return nil, err
 	}
 	return data, nil
-}
-
-// QueryByToken implements UserDB.
-func (db *userDB) QueryByToken(tokenBytes []byte) (User, error) {
-
-	var data = &User{}
-	err := db.db.View(func(txn *badger.Txn) error {
-		it := txn.NewIterator(badger.DefaultIteratorOptions)
-		defer it.Close()
-		continueIteration := true
-		for it.Rewind(); it.Valid() && continueIteration; it.Next() {
-			item := it.Item()
-			err := item.Value(func(v []byte) error {
-				u := User{}
-				err := json.Unmarshal(v, &u)
-				if err != nil {
-					return err
-				}
-				if string(u.ShareableToken) == string(tokenBytes) {
-					data = &u
-					continueIteration = false
-					return nil
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-
-	if err != nil {
-		return *data, err
-	}
-	return *data, nil
 }
 
 func (db *userDB) CloseDB() error {

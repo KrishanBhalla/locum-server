@@ -41,7 +41,7 @@ func WithUserFriends() ServicesConfig {
 	}
 }
 
-// WithUserLocation returns a ServicesConfig object that sets a user
+// WithUserLocation returns a ServicesConfig object that sets a userLocation
 func WithUserLocation() ServicesConfig {
 	return func(s *Services) error {
 		db, err := withBadger("badger/userLocation")
@@ -49,6 +49,18 @@ func WithUserLocation() ServicesConfig {
 			return err
 		}
 		s.UserLocation = NewUserLocationService(db)
+		return nil
+	}
+}
+
+// WithUserToken returns a ServicesConfig object that sets a User token
+func WithUserToken() ServicesConfig {
+	return func(s *Services) error {
+		db, err := withBadger("badger/userToken")
+		if err != nil {
+			return err
+		}
+		s.UserToken = NewUserTokenService(db)
 		return nil
 	}
 }

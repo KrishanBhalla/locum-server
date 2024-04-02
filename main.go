@@ -40,6 +40,7 @@ func main() {
 	r.Use(chiMw.RealIP)
 	r.Use(chiMw.Logger)
 	r.Use(chiMw.Recoverer)
+
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.

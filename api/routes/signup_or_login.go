@@ -8,7 +8,6 @@ import (
 
 	"github.com/KrishanBhalla/locum-server/api/spec"
 	"github.com/KrishanBhalla/locum-server/models"
-	"github.com/KrishanBhalla/locum-server/services"
 	"github.com/dgraph-io/badger"
 	chiMw "github.com/go-chi/chi/middleware"
 )
@@ -17,11 +16,11 @@ func SignupOrLogin(ctx context.Context, request spec.LoginOrSignupRequestObject)
 	// setup
 	req := request.Body
 
-	services, ok := services.FromContext(ctx)
+	services, err := validateServices(ctx)
 	reqId := chiMw.GetReqID(ctx)
 	internalServerError := spec.LoginOrSignupdefaultResponse{StatusCode: http.StatusInternalServerError}
-	if !ok {
-		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
+	if err != nil {
+		return internalServerError, err
 	}
 	userService := services.User
 
@@ -37,16 +36,11 @@ func SignupOrLogin(ctx context.Context, request spec.LoginOrSignupRequestObject)
 		if req.Email == nil {
 			req.FullName = &defaultNilValue
 		}
-		id, err := userService.Create(models.User{Id: req.UserId, FullName: *req.FullName, Email: *req.Email})
+		err := userService.Create(models.User{Id: req.UserId, FullName: *req.FullName, Email: *req.Email})
 		if err != nil {
 			return internalServerError, errors.New(fmt.Sprintf("Error creating user (SignupOrLogin) %s", reqId))
 		}
 
-		// now updates are done,m get the user again
-		user, err = userService.ByID(id)
-		if err != nil {
-			return internalServerError, err
-		}
 	} else {
 		err := userService.Update(user)
 		if err != nil {
@@ -58,5 +52,13 @@ func SignupOrLogin(ctx context.Context, request spec.LoginOrSignupRequestObject)
 			return internalServerError, err
 		}
 	}
-	return spec.LoginOrSignup200JSONResponse{Token: user.Id}, nil
+
+	tokenService := services.UserToken
+	token := models.NewUserToken(req.UserId)
+	err = tokenService.Create(token)
+	if err != nil {
+		return internalServerError, err
+	}
+
+	return spec.LoginOrSignup200JSONResponse{Token: token.Token}, nil
 }

@@ -13,6 +13,10 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
+const (
+	BearerAuthScopes = "bearerAuth.Scopes"
+)
+
 // DeleteFriendRequest defines model for DeleteFriendRequest.
 type DeleteFriendRequest struct {
 	FriendId string `json:"friendId"`
@@ -62,8 +66,8 @@ type UserRequest struct {
 
 // UserResponse defines model for UserResponse.
 type UserResponse struct {
-	FullName  string `json:"fullName"`
-	UserToken string `json:"userToken"`
+	FullName string `json:"fullName"`
+	UserId   string `json:"userId"`
 }
 
 // DeleteFriendJSONRequestBody defines body for DeleteFriend for application/json ContentType.
@@ -166,6 +170,8 @@ type MiddlewareFunc func(http.Handler) http.Handler
 func (siw *ServerInterfaceWrapper) DeleteFriend(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteFriend(w, r)
 	}))
@@ -180,6 +186,8 @@ func (siw *ServerInterfaceWrapper) DeleteFriend(w http.ResponseWriter, r *http.R
 // GetFriends operation middleware
 func (siw *ServerInterfaceWrapper) GetFriends(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetFriends(w, r)
@@ -196,6 +204,8 @@ func (siw *ServerInterfaceWrapper) GetFriends(w http.ResponseWriter, r *http.Req
 func (siw *ServerInterfaceWrapper) GetLocationsOfFriends(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetLocationsOfFriends(w, r)
 	}))
@@ -210,6 +220,8 @@ func (siw *ServerInterfaceWrapper) GetLocationsOfFriends(w http.ResponseWriter, 
 // CreateFriendRequest operation middleware
 func (siw *ServerInterfaceWrapper) CreateFriendRequest(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateFriendRequest(w, r)
@@ -226,6 +238,8 @@ func (siw *ServerInterfaceWrapper) CreateFriendRequest(w http.ResponseWriter, r 
 func (siw *ServerInterfaceWrapper) GetFriendRequests(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetFriendRequests(w, r)
 	}))
@@ -240,6 +254,8 @@ func (siw *ServerInterfaceWrapper) GetFriendRequests(w http.ResponseWriter, r *h
 // UpdateFriendRequest operation middleware
 func (siw *ServerInterfaceWrapper) UpdateFriendRequest(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.UpdateFriendRequest(w, r)
@@ -270,6 +286,8 @@ func (siw *ServerInterfaceWrapper) LoginOrSignup(w http.ResponseWriter, r *http.
 // FindUsers operation middleware
 func (siw *ServerInterfaceWrapper) FindUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.FindUsers(w, r)
@@ -423,6 +441,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	return r
 }
 
+type UnauthorizedErrorResponse struct {
+}
+
 type DeleteFriendRequestObject struct {
 	Body *DeleteFriendJSONRequestBody
 }
@@ -436,6 +457,13 @@ type DeleteFriend204Response struct {
 
 func (response DeleteFriend204Response) VisitDeleteFriendResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteFriend401Response = UnauthorizedErrorResponse
+
+func (response DeleteFriend401Response) VisitDeleteFriendResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
 	return nil
 }
 
@@ -464,6 +492,13 @@ func (response GetFriends200JSONResponse) VisitGetFriendsResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetFriends401Response = UnauthorizedErrorResponse
+
+func (response GetFriends401Response) VisitGetFriendsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
 type GetFriendsdefaultResponse struct {
 	StatusCode int
 }
@@ -489,6 +524,13 @@ func (response GetLocationsOfFriends200JSONResponse) VisitGetLocationsOfFriendsR
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetLocationsOfFriends401Response = UnauthorizedErrorResponse
+
+func (response GetLocationsOfFriends401Response) VisitGetLocationsOfFriendsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
 type GetLocationsOfFriendsdefaultResponse struct {
 	StatusCode int
 }
@@ -511,6 +553,13 @@ type CreateFriendRequest200Response struct {
 
 func (response CreateFriendRequest200Response) VisitCreateFriendRequestResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
+	return nil
+}
+
+type CreateFriendRequest401Response = UnauthorizedErrorResponse
+
+func (response CreateFriendRequest401Response) VisitCreateFriendRequestResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
 	return nil
 }
 
@@ -539,6 +588,13 @@ func (response GetFriendRequests200JSONResponse) VisitGetFriendRequestsResponse(
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetFriendRequests401Response = UnauthorizedErrorResponse
+
+func (response GetFriendRequests401Response) VisitGetFriendRequestsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
 type GetFriendRequestsdefaultResponse struct {
 	StatusCode int
 }
@@ -561,6 +617,13 @@ type UpdateFriendRequest200Response struct {
 
 func (response UpdateFriendRequest200Response) VisitUpdateFriendRequestResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
+	return nil
+}
+
+type UpdateFriendRequest401Response = UnauthorizedErrorResponse
+
+func (response UpdateFriendRequest401Response) VisitUpdateFriendRequestResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
 	return nil
 }
 
@@ -614,6 +677,13 @@ func (response FindUsers200JSONResponse) VisitFindUsersResponse(w http.ResponseW
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type FindUsers401Response = UnauthorizedErrorResponse
+
+func (response FindUsers401Response) VisitFindUsersResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
 }
 
 type FindUsersdefaultResponse struct {

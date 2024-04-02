@@ -7,6 +7,7 @@ type Services struct {
 	User         UserService
 	UserFriends  UserFriendsService
 	UserLocation UserLocationService
+	UserToken    UserTokenService
 }
 
 // NewServices initialises all services with a single db connection
