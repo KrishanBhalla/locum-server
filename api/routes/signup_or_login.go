@@ -60,5 +60,5 @@ func SignupOrLogin(ctx context.Context, request spec.LoginOrSignupRequestObject)
 		return internalServerError, err
 	}
 
-	return spec.LoginOrSignup200JSONResponse{Token: token.Token}, nil
+	return spec.LoginOrSignup200JSONResponse{Token: "BEARER " + token.Token}, nil
 }
