@@ -37,15 +37,26 @@ func SignupOrLogin(ctx context.Context, request spec.LoginOrSignupRequestObject)
 		if req.Email == nil {
 			req.FullName = &defaultNilValue
 		}
-		err = userService.Create(models.User{Id: req.UserId, FullName: *req.FullName, Email: *req.Email})
+		id, err := userService.Create(models.User{Id: req.UserId, FullName: *req.FullName, Email: *req.Email})
 		if err != nil {
 			return internalServerError, errors.New(fmt.Sprintf("Error creating user (SignupOrLogin) %s", reqId))
+		}
+
+		// now updates are done,m get the user again
+		user, err = userService.ByID(id)
+		if err != nil {
+			return internalServerError, err
 		}
 	} else {
 		err := userService.Update(user)
 		if err != nil {
 			return internalServerError, errors.New(fmt.Sprintf("Error updating user (SignupOrLogin) %s", reqId))
 		}
+		// now updates are done,m get the user again
+		user, err = userService.ByID(user.Id)
+		if err != nil {
+			return internalServerError, err
+		}
 	}
-	return spec.LoginOrSignup200Response{}, nil
+	return spec.LoginOrSignup200JSONResponse{Token: user.Id}, nil
 }

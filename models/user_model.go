@@ -1,18 +1,21 @@
 package models
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/dgraph-io/badger"
 )
 
 type User struct {
-	Id            string    `json:"id"`
-	Email         string    `json:"email"`
-	FullName      string    `json:"fullName"`
-	LastLoginTime time.Time `json:"lastLoginTime"`
-	CreationTime  time.Time `json:"creationTime"`
+	Id             string    `json:"id"`
+	Email          string    `json:"email"`
+	FullName       string    `json:"fullName"`
+	LastLoginTime  time.Time `json:"lastLoginTime"`
+	CreationTime   time.Time `json:"creationTime"`
+	ShareableToken []byte    `json:"shareableToken"`
 }
 
 type UserDB interface {
@@ -20,7 +23,7 @@ type UserDB interface {
 	Query(queryString string) ([]User, error)
 
 	// Methods for altering contents
-	Create(user User) error
+	Create(user User) (string, error)
 	Update(user User) error
 	Delete(userId string) error
 	DbCloser
@@ -54,8 +57,16 @@ func (db *userDB) ByID(userId string) (User, error) {
 }
 
 // Create implements UserDB.
-func (db *userDB) Create(user User) error {
-	return db.Update(user)
+func (db *userDB) Create(user User) (string, error) {
+	err := db.Update(user)
+	if err != nil {
+		return "", err
+	}
+	user, err = db.ByID(user.Id)
+	if err != nil {
+		return "", err
+	}
+	return user.Id, nil
 }
 
 // Delete implements UserDB.
@@ -96,6 +107,11 @@ func (db *userDB) Update(user User) error {
 		user.LastLoginTime = user.CreationTime
 	}
 
+	if user.ShareableToken == nil {
+		token := sha256.New().Sum([]byte(user.Id))
+		user.ShareableToken = token
+	}
+
 	err = db.db.Update(func(txn *badger.Txn) error {
 
 		userBytes, err := json.Marshal(user)
@@ -110,24 +126,71 @@ func (db *userDB) Update(user User) error {
 
 // Query implements UserDB.
 func (db *userDB) Query(queryString string) ([]User, error) {
-	users := make([]User, 0, 0)
-	var data = make([][]byte, 0)
-	var queryBytes []byte = []byte(queryString)
-	data, err := lookupByPrefix(db.db, queryBytes, data)
-	if err != nil {
-		return users, err
-	}
-	if len(data) == 0 {
-		return users, nil
-	}
-	for _, d := range data {
-		user := &User{}
-		err = json.Unmarshal(d, user)
-		if err == nil {
-			users = append(users, *user)
+
+	var data = make([]User, 0)
+	err := db.db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			err := item.Value(func(v []byte) error {
+				u := User{}
+				err := json.Unmarshal(v, &u)
+				if err != nil {
+					return err
+				}
+				if strings.Contains(u.FullName, queryString) {
+					data = append(data, u)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
 		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
-	return users, nil
+	return data, nil
+}
+
+// QueryByToken implements UserDB.
+func (db *userDB) QueryByToken(tokenBytes []byte) (User, error) {
+
+	var data = &User{}
+	err := db.db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		continueIteration := true
+		for it.Rewind(); it.Valid() && continueIteration; it.Next() {
+			item := it.Item()
+			err := item.Value(func(v []byte) error {
+				u := User{}
+				err := json.Unmarshal(v, &u)
+				if err != nil {
+					return err
+				}
+				if string(u.ShareableToken) == string(tokenBytes) {
+					data = &u
+					continueIteration = false
+					return nil
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return *data, err
+	}
+	return *data, nil
 }
 
 func (db *userDB) CloseDB() error {

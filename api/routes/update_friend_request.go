@@ -11,37 +11,32 @@ import (
 	chiMw "github.com/go-chi/chi/middleware"
 )
 
-func UpdateFollowRequest(ctx context.Context, request spec.UpdateFollowRequestRequestObject) (spec.UpdateFollowRequestResponseObject, error) {
+func UpdateFriendRequest(ctx context.Context, request spec.UpdateFriendRequestRequestObject) (spec.UpdateFriendRequestResponseObject, error) {
 
 	services, ok := services.FromContext(ctx)
 	reqId := chiMw.GetReqID(ctx)
-	internalServerError := spec.UpdateFollowRequestdefaultResponse{StatusCode: http.StatusInternalServerError}
+	internalServerError := spec.UpdateFriendRequestdefaultResponse{StatusCode: http.StatusInternalServerError}
 	if !ok {
 		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
 	}
 
 	// Process
 	userId := request.Body.UserId
-	requestingUser := request.Body.RequestedFollowerUserId
+	requestingUser := request.Body.FriendId
 	requestAccepted := request.Body.Accept
 
 	userFriends := services.UserFriends
 	var err error
 	if requestAccepted {
-		err = userFriends.AddFollower(userId, requestingUser)
+		err = userFriends.AddFriend(userId, requestingUser)
 	}
 	if err != nil {
 		return nil, err
 	}
-	err = userFriends.RemoveFollowerRequest(userId, requestingUser)
-	if err != nil {
-		return nil, err
-	}
-
-	err = userFriends.RemoveFollowRequest(requestingUser, userId)
+	err = userFriends.RemoveFriendRequest(userId, requestingUser)
 	if err != nil {
 		return nil, err
 	}
 
-	return spec.UpdateFollowRequest200Response{}, nil
+	return spec.UpdateFriendRequest200Response{}, nil
 }

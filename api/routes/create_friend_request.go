@@ -13,28 +13,28 @@ import (
 	chiMw "github.com/go-chi/chi/middleware"
 )
 
-func CreateFollowRequest(ctx context.Context, request spec.CreateFollowRequestRequestObject) (spec.CreateFollowRequestResponseObject, error) {
+func CreateFriendRequest(ctx context.Context, request spec.CreateFriendRequestRequestObject) (spec.CreateFriendRequestResponseObject, error) {
 
 	services, ok := services.FromContext(ctx)
 	reqId := chiMw.GetReqID(ctx)
-	internalServerError := spec.CreateFollowRequestdefaultResponse{StatusCode: http.StatusInternalServerError}
+	internalServerError := spec.CreateFriendRequestdefaultResponse{StatusCode: http.StatusInternalServerError}
 	if !ok {
 		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
 	}
 
 	// Process
 	userId := request.Body.UserId
-	userToFollow := request.Body.FollowingUserId
+	userToBefriend := request.Body.FriendId
 	reqTime := time.Now()
 	userFriends := services.UserFriends
-	err := userFriends.AddFollowerRequest(userToFollow, models.FollowRequest{UserId: userId, Timestamp: reqTime})
+	err := userFriends.AddFriendRequest(userToBefriend, models.FriendRequest{UserId: userId, Timestamp: reqTime})
 	if err != nil {
 		return nil, err
 	}
-	err = userFriends.AddFollowRequest(userId, models.FollowRequest{UserId: userToFollow, Timestamp: reqTime})
+	err = userFriends.AddFriendRequest(userId, models.FriendRequest{UserId: userToBefriend, Timestamp: reqTime})
 	if err != nil {
 		return nil, err
 	}
 
-	return spec.CreateFollowRequest200Response{}, nil
+	return spec.CreateFriendRequest200Response{}, nil
 }

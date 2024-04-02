@@ -12,11 +12,11 @@ import (
 	chiMw "github.com/go-chi/chi/middleware"
 )
 
-func UpdateLocationsOfFollowedUsers(ctx context.Context, request spec.UpdateLocationsOfFollowedUsersRequestObject) (spec.UpdateLocationsOfFollowedUsersResponseObject, error) {
+func GetLocationsOfFriends(ctx context.Context) (spec.GetLocationsOfFriendsResponseObject, error) {
 	/// setup
 	services, ok := services.FromContext(ctx)
 	reqId := chiMw.GetReqID(ctx)
-	internalServerError := spec.UpdateLocationsOfFollowedUsersdefaultResponse{StatusCode: http.StatusInternalServerError}
+	internalServerError := spec.GetLocationsOfFriendsdefaultResponse{StatusCode: http.StatusInternalServerError}
 	if !ok {
 		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
 	}
@@ -29,10 +29,10 @@ func UpdateLocationsOfFollowedUsers(ctx context.Context, request spec.UpdateLoca
 	if err != nil {
 		return internalServerError, errors.New(fmt.Sprintf("Failed to find user friends with reqId: %s, err: %s", reqId, err.Error()))
 	}
-	following := userFriends.FollowingUserIds
+	friends := userFriends.FriendIds
 
-	locations := make(spec.UpdateLocationsOfFollowedUsers200JSONResponse, 0)
-	for _, f := range following {
+	locations := make(spec.GetLocationsOfFriends200JSONResponse, 0)
+	for _, f := range friends {
 		loc, err := userLocationService.LatestGeoTimeByUserID(f)
 		if err != nil {
 			log.Default().Print(err)

@@ -12,11 +12,11 @@ import (
 	chiMw "github.com/go-chi/chi/middleware"
 )
 
-func FindFollowerRequests(ctx context.Context, request spec.FindFollowerRequestsRequestObject) (spec.FindFollowerRequestsResponseObject, error) {
+func GetFriendRequests(ctx context.Context, request spec.GetFriendRequestsRequestObject) (spec.GetFriendRequestsResponseObject, error) {
 
 	services, ok := services.FromContext(ctx)
 	reqId := chiMw.GetReqID(ctx)
-	internalServerError := spec.FindFollowerRequestsdefaultResponse{StatusCode: http.StatusInternalServerError}
+	internalServerError := spec.GetFriendRequestsdefaultResponse{StatusCode: http.StatusInternalServerError}
 	if !ok {
 		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
 	}
@@ -30,7 +30,7 @@ func FindFollowerRequests(ctx context.Context, request spec.FindFollowerRequests
 		return nil, err
 	}
 
-	followerRequests := friends.FollowerRequests
+	followerRequests := friends.FriendRequests
 	response := make([]spec.UserResponse, 0, len(followerRequests))
 	for _, f := range followerRequests {
 
@@ -47,5 +47,5 @@ func FindFollowerRequests(ctx context.Context, request spec.FindFollowerRequests
 		UserId   string `json:"userId"`
 	}
 
-	return spec.FindFollowerRequests200JSONResponse{}, nil
+	return spec.GetFriendRequests200JSONResponse{}, nil
 }

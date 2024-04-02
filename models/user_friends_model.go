@@ -7,12 +7,12 @@ import (
 	"github.com/dgraph-io/badger"
 )
 
-type FollowRequest struct {
+type FriendRequest struct {
 	UserId    string    `json:"userId"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func concatenateFollowRequests(initialRequests []FollowRequest, newRequests ...FollowRequest) []FollowRequest {
+func concatenateFriendRequests(initialRequests []FriendRequest, newRequests ...FriendRequest) []FriendRequest {
 
 	requestMap := make(map[string]time.Time)
 	for _, f := range initialRequests {
@@ -25,14 +25,14 @@ func concatenateFollowRequests(initialRequests []FollowRequest, newRequests ...F
 			requestMap[followReq.UserId] = followReq.Timestamp
 		}
 	}
-	result := make([]FollowRequest, 0, len(requestMap))
+	result := make([]FriendRequest, 0, len(requestMap))
 	for k, v := range requestMap {
-		result = append(result, FollowRequest{UserId: k, Timestamp: v})
+		result = append(result, FriendRequest{UserId: k, Timestamp: v})
 	}
 	return result
 }
 
-func removeFollowRequest(original []FollowRequest, key string) []FollowRequest {
+func removeFriendRequest(original []FriendRequest, key string) []FriendRequest {
 	for i, v := range original {
 		if v.UserId == key {
 			if i < len(original) {
@@ -46,11 +46,9 @@ func removeFollowRequest(original []FollowRequest, key string) []FollowRequest {
 }
 
 type UserFriends struct {
-	UserId           string          `json:"id"`
-	FollowerUserIds  []string        `json:"followerUserIds"`
-	FollowingUserIds []string        `json:"followingUserIds"`
-	FollowerRequests []FollowRequest `json:"followerRequests"`
-	FollowRequests   []FollowRequest `json:"followRequests"`
+	UserId         string          `json:"id"`
+	FriendIds      []string        `json:"friendIds"`
+	FriendRequests []FriendRequest `json:"followRequests"`
 }
 
 type UserFriendsDB interface {
@@ -60,15 +58,11 @@ type UserFriendsDB interface {
 	Create(userFriends UserFriends) error
 	Append(userFriends UserFriends) error
 
-	RemoveFollower(userId, followerUserId string) error
-	RemoveFollowing(userId, followingUserId string) error
-	AddFollower(userId, followerUserId string) error
-	AddFollowing(userId, followingUserId string) error
+	RemoveFriend(userId, friendId string) error
+	AddFriend(userId, friendId string) error
 
-	RemoveFollowerRequest(userId, followerRequestUserId string) error
-	RemoveFollowRequest(userId, followRequestUserId string) error
-	AddFollowerRequest(userId string, followerRequest FollowRequest) error
-	AddFollowRequest(userId string, followRequest FollowRequest) error
+	RemoveFriendRequest(userId, friendId string) error
+	AddFriendRequest(userId string, followRequest FriendRequest) error
 
 	Update(userFriends UserFriends) error
 	Delete(userId string) error
@@ -137,104 +131,55 @@ func (db *userFriendsDB) Append(userFriends UserFriends) error {
 		return err
 	}
 
-	userFriends.FollowerUserIds = appendToSliceWithoutDuplicates(friends.FollowerUserIds, userFriends.FollowerUserIds...)
-	userFriends.FollowingUserIds = appendToSliceWithoutDuplicates(friends.FollowingUserIds, userFriends.FollowingUserIds...)
-
-	userFriends.FollowRequests = concatenateFollowRequests(userFriends.FollowRequests, friends.FollowRequests...)
-	userFriends.FollowerRequests = concatenateFollowRequests(userFriends.FollowerRequests, friends.FollowerRequests...)
+	userFriends.FriendIds = appendToSliceWithoutDuplicates(friends.FriendIds, userFriends.FriendIds...)
+	userFriends.FriendRequests = concatenateFriendRequests(userFriends.FriendRequests, friends.FriendRequests...)
 
 	return db.Update(userFriends)
 }
 
-func (db *userFriendsDB) RemoveFollower(userId, followerUserId string) error {
+func (db *userFriendsDB) RemoveFriend(userId, friendId string) error {
 
 	userFriends, err := db.ByUserID(userId)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return err
 	}
 
-	userFriends.FollowerUserIds = removeFromSlice(userFriends.FollowerUserIds, followerUserId)
+	userFriends.FriendIds = removeFromSlice(userFriends.FriendIds, friendId)
 	return db.Update(userFriends)
 }
-func (db *userFriendsDB) RemoveFollowing(userId, followingUserId string) error {
+
+func (db *userFriendsDB) AddFriend(userId, friendId string) error {
 
 	userFriends, err := db.ByUserID(userId)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return err
 	}
 
-	userFriends.FollowingUserIds = removeFromSlice(userFriends.FollowingUserIds, followingUserId)
-
-	return db.Update(userFriends)
-}
-
-func (db *userFriendsDB) AddFollower(userId, followerUserId string) error {
-
-	userFriends, err := db.ByUserID(userId)
-	if err != nil && err != badger.ErrKeyNotFound {
-		return err
-	}
-
-	userFriends.FollowerUserIds = appendToSliceWithoutDuplicates(userFriends.FollowerUserIds, followerUserId)
-	return db.Update(userFriends)
-}
-
-func (db *userFriendsDB) AddFollowing(userId, followingUserId string) error {
-
-	userFriends, err := db.ByUserID(userId)
-	if err != nil && err != badger.ErrKeyNotFound {
-		return err
-	}
-
-	userFriends.FollowingUserIds = appendToSliceWithoutDuplicates(userFriends.FollowingUserIds, followingUserId)
-
+	userFriends.FriendIds = appendToSliceWithoutDuplicates(userFriends.FriendIds, friendId)
 	return db.Update(userFriends)
 }
 
 // Follow reqeusts
 
-func (db *userFriendsDB) RemoveFollowerRequest(userId, followerRequestUserId string) error {
+func (db *userFriendsDB) RemoveFriendRequest(userId, friendRequestUserId string) error {
 
 	userFriends, err := db.ByUserID(userId)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return err
 	}
 
-	userFriends.FollowRequests = removeFollowRequest(userFriends.FollowRequests, followerRequestUserId)
-	return db.Update(userFriends)
-}
-func (db *userFriendsDB) RemoveFollowRequest(userId, followRequestUserId string) error {
-
-	userFriends, err := db.ByUserID(userId)
-	if err != nil && err != badger.ErrKeyNotFound {
-		return err
-	}
-
-	userFriends.FollowRequests = removeFollowRequest(userFriends.FollowRequests, followRequestUserId)
-
+	userFriends.FriendRequests = removeFriendRequest(userFriends.FriendRequests, friendRequestUserId)
 	return db.Update(userFriends)
 }
 
-func (db *userFriendsDB) AddFollowerRequest(userId string, followerRequest FollowRequest) error {
+func (db *userFriendsDB) AddFriendRequest(userId string, friendRequest FriendRequest) error {
 
 	userFriends, err := db.ByUserID(userId)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return err
 	}
 
-	userFriends.FollowerRequests = concatenateFollowRequests(userFriends.FollowerRequests, followerRequest)
-	return db.Update(userFriends)
-}
-
-func (db *userFriendsDB) AddFollowRequest(userId string, followRequest FollowRequest) error {
-
-	userFriends, err := db.ByUserID(userId)
-	if err != nil && err != badger.ErrKeyNotFound {
-		return err
-	}
-
-	userFriends.FollowRequests = concatenateFollowRequests(userFriends.FollowRequests, followRequest)
-
+	userFriends.FriendRequests = concatenateFriendRequests(userFriends.FriendRequests, friendRequest)
 	return db.Update(userFriends)
 }
 

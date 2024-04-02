@@ -11,11 +11,11 @@ import (
 	chiMw "github.com/go-chi/chi/middleware"
 )
 
-func FindFollowing(ctx context.Context, request spec.FindFollowingRequestObject) (spec.FindFollowingResponseObject, error) {
+func GetFriends(ctx context.Context, request spec.GetFriendsRequestObject) (spec.GetFriendsResponseObject, error) {
 	/// setup
 	services, ok := services.FromContext(ctx)
 	reqId := chiMw.GetReqID(ctx)
-	internalServerError := spec.FindFollowingdefaultResponse{StatusCode: http.StatusInternalServerError}
+	internalServerError := spec.GetFriendsdefaultResponse{StatusCode: http.StatusInternalServerError}
 	if !ok {
 		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
 	}
@@ -27,12 +27,12 @@ func FindFollowing(ctx context.Context, request spec.FindFollowingRequestObject)
 		return internalServerError, err
 	}
 	// Create Response
-	followingUsers := make(spec.FindFollowing200JSONResponse, 0, len(friends.FollowerUserIds))
-	for _, following := range friends.FollowingUserIds {
-		user, err := services.User.ByID(following)
+	followers := make(spec.GetFriends200JSONResponse, 0, len(friends.FriendIds))
+	for _, follower := range friends.FriendIds {
+		user, err := services.User.ByID(follower)
 		if err == nil {
-			followingUsers = append(followingUsers, spec.UserResponse{UserId: following, FullName: user.FullName})
+			followers = append(followers, spec.UserResponse{UserId: follower, FullName: user.FullName})
 		}
 	}
-	return followingUsers, nil
+	return followers, nil
 }

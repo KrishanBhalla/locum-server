@@ -51,25 +51,22 @@ paths:
       responses:
         '200':
           description: Login Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
         default:
           description: unexpected error
    
-  /followers:
+  /friends:
   
-    post:
+    get:
         description: |
-          Find all followers
-        operationId: findFollowers
-        requestBody:
-          description: User to find the followers of
-          required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FindFriendsRequest'
+          Find all friends
+        operationId: getFriends
         responses:
           '200':
-            description: Find Followers Response
+            description: Find Friends Response
             content:
               application/json:
                 schema:
@@ -77,37 +74,30 @@ paths:
           default:
             description: unexpected error
     delete:
-      description: deletes a single follower based on the userId and followerId supplied
-      operationId: deleteFollower
+      description: deletes a single friend based on the userId and friendId supplied
+      operationId: deleteFriend
       requestBody:
-        description: Follower/User pair to delete
+        description: Friend/User pair to delete
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeleteFollowerRequest'
+              $ref: '#/components/schemas/DeleteFriendRequest'
       responses:
         '204':
-          description: follower deleted
+          description: friend deleted
         default:
           description: unexpected error
   
-  /followers/requests:
+  /friends/requests:
   
-    post:
+    get:
         description: |
-          Find all followers
-        operationId: findFollowerRequests
-        requestBody:
-          description: User to find the follower requests of
-          required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FindFriendsRequest'
+          Find all friend requests
+        operationId: getFriendRequests
         responses:
           '200':
-            description: Find Follow Request Response
+            description: Find Friends Requests Response
             content:
               application/json:
                 schema:
@@ -115,95 +105,53 @@ paths:
           default:
             description: unexpected error
   
-  /following:
-    post:
-        description: |
-          Find all following
-        operationId: findFollowing
-        requestBody:
-          description: User to find the following of
-          required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FindFriendsRequest'
-        responses:
-          '200':
-            description: Find Following Response
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/FindFriendsResponse'
-          default:
-            description: unexpected error
-    delete:
-      description: deletes a single follower based on the userId and followerId supplied
-      operationId: deleteFollowing
-      requestBody:
-        description: Following/User pair to delete
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteFollowingRequest'
-      responses:
-        '204':
-          description: follower deleted
-        default:
-          description: unexpected error
+
   
-  /following/locations:
-    post:
+  /friends/locations:
+    get:
       description: | 
-        Find the locations of all followed users
-      operationId: updateLocationsOfFollowedUsers
-      requestBody:
-        description: User for whom we will find the location of their followign
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateFollowedUserLocationsRequest'
+        Find the locations of all friends
+      operationId: getLocationsOfFriends
       responses:
         '200':
-          description: Find Following Response
+          description: Get Friend Locations Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateFollowedUserLocationsResponse'
+                $ref: '#/components/schemas/GetFriendLocationsResponse'
         default:
           description: unexpected error
 
-  /follow/request:
+  /friends/request:
     post:
         description: |
           Follow a new user
-        operationId: createFollowRequest
+        operationId: createFriendRequest
         requestBody:
           description: User to follow
           required: true
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FollowRequestRequest'
+                $ref: '#/components/schemas/FriendRequestRequest'
         responses:
           '200':
-            description: Follow Request Response
+            description: Friend Request Response
           default:
             description: unexpected error
   
-  /follow/response:
+  /friends/response:
     post:
         description: |
-          Accept or reject a follow request
-        operationId: updateFollowRequest
+          Accept or reject a friend request
+        operationId: updateFriendRequest
         requestBody:
-          description: Accepted or denied follow request
+          description: Accepted or denied friend request
           required: true
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FollowResponseRequest'
+                $ref: '#/components/schemas/FriendResponseRequest'
         responses:
           '200':
             description: Follow Response Response
@@ -225,10 +173,10 @@ components:
     UserResponse:
       type: object
       required:
-        - userId
+        - userToken
         - fullName
       properties:
-        userId:
+        userToken:
           type: string
         fullName:
           type: string
@@ -263,14 +211,14 @@ components:
           type: string
         email:
           type: string  
-# Friends
-    FindFriendsRequest:
+    LoginResponse:
       type: object
       required:
-        - userId  
+        - token  
       properties:
-        userId:
+        token:
           type: string
+# Friends
   
     FindFriendsResponse:
       type: array
@@ -278,63 +226,36 @@ components:
         $ref: '#/components/schemas/UserResponse'
 
 # Followers
-    DeleteFollowerRequest:
+    DeleteFriendRequest:
       type: object
       required:
-        - userId  
-        - followerUserId
+        - friendId
       properties:
-        userId:
+        friendId:
           type: string
-        followerUserId:
-          type: string
-# Following
-    DeleteFollowingRequest:
-      type: object
-      required:
-        - userId  
-        - followingUserId
-      properties:
-        userId:
-          type: string
-        followingUserId:
-          type: string
-# UpdateFollowedUserLocations
-    UpdateFollowedUserLocationsRequest:
-      type: object
-      required:
-        - userId  
-      properties:
-        userId:
-          type: string
-    UpdateFollowedUserLocationsResponse:
+# GetFriendLocations
+    GetFriendLocationsResponse:
       type: array
       items:
         $ref: '#/components/schemas/UserLocation'
 
-# FollowRequestRequest
-    FollowRequestRequest:
+# FriendRequestRequest
+    FriendRequestRequest:
       type: object
       required:
-        - userId
-        - followingUserId
+        - friendId
       properties:
-        userId:
-          type: string
-        followingUserId:
+        friendId:
           type: string
 
-# FollowResponseRequest
-    FollowResponseRequest:
+# FriendResponseRequest
+    FriendResponseRequest:
       type: object
       required:
-        - userId
-        - requestedFollowerUserId
+        - friendId
         - accept
       properties:
-        userId:
-          type: string
-        requestedFollowerUserId:
+        friendId:
           type: string
         accept:
           type: boolean

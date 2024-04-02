@@ -26,8 +26,8 @@ func (*ServerImpl) UpdateFollowRequest(ctx context.Context, request spec.UpdateF
 }
 
 // UpdateLocationsOfFollowedUsers implements spec.StrictServerInterface.
-func (*ServerImpl) UpdateLocationsOfFollowedUsers(ctx context.Context, request spec.UpdateLocationsOfFollowedUsersRequestObject) (spec.UpdateLocationsOfFollowedUsersResponseObject, error) {
-	return routes.UpdateLocationsOfFollowedUsers(ctx, request)
+func (*ServerImpl) GetLocationsOfFriends(ctx context.Context, request spec.UpdateLocationsOfFollowedUsersRequestObject) (spec.UpdateLocationsOfFollowedUsersResponseObject, error) {
+	return routes.GetLocationsOfFriends(ctx, request)
 }
 
 // DeleteFollower implements spec.StrictServerInterface.

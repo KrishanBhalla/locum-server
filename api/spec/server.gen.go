@@ -13,38 +13,27 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
-// DeleteFollowerRequest defines model for DeleteFollowerRequest.
-type DeleteFollowerRequest struct {
-	FollowerUserId string `json:"followerUserId"`
-	UserId         string `json:"userId"`
-}
-
-// DeleteFollowingRequest defines model for DeleteFollowingRequest.
-type DeleteFollowingRequest struct {
-	FollowingUserId string `json:"followingUserId"`
-	UserId          string `json:"userId"`
-}
-
-// FindFriendsRequest defines model for FindFriendsRequest.
-type FindFriendsRequest struct {
-	UserId string `json:"userId"`
+// DeleteFriendRequest defines model for DeleteFriendRequest.
+type DeleteFriendRequest struct {
+	FriendId string `json:"friendId"`
 }
 
 // FindFriendsResponse defines model for FindFriendsResponse.
 type FindFriendsResponse = []UserResponse
 
-// FollowRequestRequest defines model for FollowRequestRequest.
-type FollowRequestRequest struct {
-	FollowingUserId string `json:"followingUserId"`
-	UserId          string `json:"userId"`
+// FriendRequestRequest defines model for FriendRequestRequest.
+type FriendRequestRequest struct {
+	FriendId string `json:"friendId"`
 }
 
-// FollowResponseRequest defines model for FollowResponseRequest.
-type FollowResponseRequest struct {
-	Accept                  bool   `json:"accept"`
-	RequestedFollowerUserId string `json:"requestedFollowerUserId"`
-	UserId                  string `json:"userId"`
+// FriendResponseRequest defines model for FriendResponseRequest.
+type FriendResponseRequest struct {
+	Accept   bool   `json:"accept"`
+	FriendId string `json:"friendId"`
 }
+
+// GetFriendLocationsResponse defines model for GetFriendLocationsResponse.
+type GetFriendLocationsResponse = []UserLocation
 
 // LoginRequest defines model for LoginRequest.
 type LoginRequest struct {
@@ -53,13 +42,10 @@ type LoginRequest struct {
 	UserId   string  `json:"userId"`
 }
 
-// UpdateFollowedUserLocationsRequest defines model for UpdateFollowedUserLocationsRequest.
-type UpdateFollowedUserLocationsRequest struct {
-	UserId string `json:"userId"`
+// LoginResponse defines model for LoginResponse.
+type LoginResponse struct {
+	Token string `json:"token"`
 }
-
-// UpdateFollowedUserLocationsResponse defines model for UpdateFollowedUserLocationsResponse.
-type UpdateFollowedUserLocationsResponse = []UserLocation
 
 // UserLocation The location of a user with a timestamp given in epoch millis
 type UserLocation struct {
@@ -76,33 +62,18 @@ type UserRequest struct {
 
 // UserResponse defines model for UserResponse.
 type UserResponse struct {
-	FullName string `json:"fullName"`
-	UserId   string `json:"userId"`
+	FullName  string `json:"fullName"`
+	UserToken string `json:"userToken"`
 }
 
-// CreateFollowRequestJSONRequestBody defines body for CreateFollowRequest for application/json ContentType.
-type CreateFollowRequestJSONRequestBody = FollowRequestRequest
+// DeleteFriendJSONRequestBody defines body for DeleteFriend for application/json ContentType.
+type DeleteFriendJSONRequestBody = DeleteFriendRequest
 
-// UpdateFollowRequestJSONRequestBody defines body for UpdateFollowRequest for application/json ContentType.
-type UpdateFollowRequestJSONRequestBody = FollowResponseRequest
+// CreateFriendRequestJSONRequestBody defines body for CreateFriendRequest for application/json ContentType.
+type CreateFriendRequestJSONRequestBody = FriendRequestRequest
 
-// DeleteFollowerJSONRequestBody defines body for DeleteFollower for application/json ContentType.
-type DeleteFollowerJSONRequestBody = DeleteFollowerRequest
-
-// FindFollowersJSONRequestBody defines body for FindFollowers for application/json ContentType.
-type FindFollowersJSONRequestBody = FindFriendsRequest
-
-// FindFollowerRequestsJSONRequestBody defines body for FindFollowerRequests for application/json ContentType.
-type FindFollowerRequestsJSONRequestBody = FindFriendsRequest
-
-// DeleteFollowingJSONRequestBody defines body for DeleteFollowing for application/json ContentType.
-type DeleteFollowingJSONRequestBody = DeleteFollowingRequest
-
-// FindFollowingJSONRequestBody defines body for FindFollowing for application/json ContentType.
-type FindFollowingJSONRequestBody = FindFriendsRequest
-
-// UpdateLocationsOfFollowedUsersJSONRequestBody defines body for UpdateLocationsOfFollowedUsers for application/json ContentType.
-type UpdateLocationsOfFollowedUsersJSONRequestBody = UpdateFollowedUserLocationsRequest
+// UpdateFriendRequestJSONRequestBody defines body for UpdateFriendRequest for application/json ContentType.
+type UpdateFriendRequestJSONRequestBody = FriendResponseRequest
 
 // LoginOrSignupJSONRequestBody defines body for LoginOrSignup for application/json ContentType.
 type LoginOrSignupJSONRequestBody = LoginRequest
@@ -113,29 +84,23 @@ type FindUsersJSONRequestBody = UserRequest
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (POST /follow/request)
-	CreateFollowRequest(w http.ResponseWriter, r *http.Request)
+	// (DELETE /friends)
+	DeleteFriend(w http.ResponseWriter, r *http.Request)
 
-	// (POST /follow/response)
-	UpdateFollowRequest(w http.ResponseWriter, r *http.Request)
+	// (GET /friends)
+	GetFriends(w http.ResponseWriter, r *http.Request)
 
-	// (DELETE /followers)
-	DeleteFollower(w http.ResponseWriter, r *http.Request)
+	// (GET /friends/locations)
+	GetLocationsOfFriends(w http.ResponseWriter, r *http.Request)
 
-	// (POST /followers)
-	FindFollowers(w http.ResponseWriter, r *http.Request)
+	// (POST /friends/request)
+	CreateFriendRequest(w http.ResponseWriter, r *http.Request)
 
-	// (POST /followers/requests)
-	FindFollowerRequests(w http.ResponseWriter, r *http.Request)
+	// (GET /friends/requests)
+	GetFriendRequests(w http.ResponseWriter, r *http.Request)
 
-	// (DELETE /following)
-	DeleteFollowing(w http.ResponseWriter, r *http.Request)
-
-	// (POST /following)
-	FindFollowing(w http.ResponseWriter, r *http.Request)
-
-	// (POST /following/locations)
-	UpdateLocationsOfFollowedUsers(w http.ResponseWriter, r *http.Request)
+	// (POST /friends/response)
+	UpdateFriendRequest(w http.ResponseWriter, r *http.Request)
 
 	// (POST /login)
 	LoginOrSignup(w http.ResponseWriter, r *http.Request)
@@ -148,43 +113,33 @@ type ServerInterface interface {
 
 type Unimplemented struct{}
 
-// (POST /follow/request)
-func (_ Unimplemented) CreateFollowRequest(w http.ResponseWriter, r *http.Request) {
+// (DELETE /friends)
+func (_ Unimplemented) DeleteFriend(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (POST /follow/response)
-func (_ Unimplemented) UpdateFollowRequest(w http.ResponseWriter, r *http.Request) {
+// (GET /friends)
+func (_ Unimplemented) GetFriends(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (DELETE /followers)
-func (_ Unimplemented) DeleteFollower(w http.ResponseWriter, r *http.Request) {
+// (GET /friends/locations)
+func (_ Unimplemented) GetLocationsOfFriends(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (POST /followers)
-func (_ Unimplemented) FindFollowers(w http.ResponseWriter, r *http.Request) {
+// (POST /friends/request)
+func (_ Unimplemented) CreateFriendRequest(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (POST /followers/requests)
-func (_ Unimplemented) FindFollowerRequests(w http.ResponseWriter, r *http.Request) {
+// (GET /friends/requests)
+func (_ Unimplemented) GetFriendRequests(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (DELETE /following)
-func (_ Unimplemented) DeleteFollowing(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (POST /following)
-func (_ Unimplemented) FindFollowing(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (POST /following/locations)
-func (_ Unimplemented) UpdateLocationsOfFollowedUsers(w http.ResponseWriter, r *http.Request) {
+// (POST /friends/response)
+func (_ Unimplemented) UpdateFriendRequest(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -207,12 +162,12 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// CreateFollowRequest operation middleware
-func (siw *ServerInterfaceWrapper) CreateFollowRequest(w http.ResponseWriter, r *http.Request) {
+// DeleteFriend operation middleware
+func (siw *ServerInterfaceWrapper) DeleteFriend(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateFollowRequest(w, r)
+		siw.Handler.DeleteFriend(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -222,12 +177,12 @@ func (siw *ServerInterfaceWrapper) CreateFollowRequest(w http.ResponseWriter, r 
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// UpdateFollowRequest operation middleware
-func (siw *ServerInterfaceWrapper) UpdateFollowRequest(w http.ResponseWriter, r *http.Request) {
+// GetFriends operation middleware
+func (siw *ServerInterfaceWrapper) GetFriends(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdateFollowRequest(w, r)
+		siw.Handler.GetFriends(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -237,12 +192,12 @@ func (siw *ServerInterfaceWrapper) UpdateFollowRequest(w http.ResponseWriter, r 
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// DeleteFollower operation middleware
-func (siw *ServerInterfaceWrapper) DeleteFollower(w http.ResponseWriter, r *http.Request) {
+// GetLocationsOfFriends operation middleware
+func (siw *ServerInterfaceWrapper) GetLocationsOfFriends(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteFollower(w, r)
+		siw.Handler.GetLocationsOfFriends(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -252,12 +207,12 @@ func (siw *ServerInterfaceWrapper) DeleteFollower(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// FindFollowers operation middleware
-func (siw *ServerInterfaceWrapper) FindFollowers(w http.ResponseWriter, r *http.Request) {
+// CreateFriendRequest operation middleware
+func (siw *ServerInterfaceWrapper) CreateFriendRequest(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.FindFollowers(w, r)
+		siw.Handler.CreateFriendRequest(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -267,12 +222,12 @@ func (siw *ServerInterfaceWrapper) FindFollowers(w http.ResponseWriter, r *http.
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// FindFollowerRequests operation middleware
-func (siw *ServerInterfaceWrapper) FindFollowerRequests(w http.ResponseWriter, r *http.Request) {
+// GetFriendRequests operation middleware
+func (siw *ServerInterfaceWrapper) GetFriendRequests(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.FindFollowerRequests(w, r)
+		siw.Handler.GetFriendRequests(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -282,42 +237,12 @@ func (siw *ServerInterfaceWrapper) FindFollowerRequests(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// DeleteFollowing operation middleware
-func (siw *ServerInterfaceWrapper) DeleteFollowing(w http.ResponseWriter, r *http.Request) {
+// UpdateFriendRequest operation middleware
+func (siw *ServerInterfaceWrapper) UpdateFriendRequest(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteFollowing(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// FindFollowing operation middleware
-func (siw *ServerInterfaceWrapper) FindFollowing(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.FindFollowing(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// UpdateLocationsOfFollowedUsers operation middleware
-func (siw *ServerInterfaceWrapper) UpdateLocationsOfFollowedUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdateLocationsOfFollowedUsers(w, r)
+		siw.Handler.UpdateFriendRequest(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -471,28 +396,22 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/follow/request", wrapper.CreateFollowRequest)
+		r.Delete(options.BaseURL+"/friends", wrapper.DeleteFriend)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/follow/response", wrapper.UpdateFollowRequest)
+		r.Get(options.BaseURL+"/friends", wrapper.GetFriends)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/followers", wrapper.DeleteFollower)
+		r.Get(options.BaseURL+"/friends/locations", wrapper.GetLocationsOfFriends)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/followers", wrapper.FindFollowers)
+		r.Post(options.BaseURL+"/friends/request", wrapper.CreateFriendRequest)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/followers/requests", wrapper.FindFollowerRequests)
+		r.Get(options.BaseURL+"/friends/requests", wrapper.GetFriendRequests)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/following", wrapper.DeleteFollowing)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/following", wrapper.FindFollowing)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/following/locations", wrapper.UpdateLocationsOfFollowedUsers)
+		r.Post(options.BaseURL+"/friends/response", wrapper.UpdateFriendRequest)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/login", wrapper.LoginOrSignup)
@@ -504,206 +423,152 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	return r
 }
 
-type CreateFollowRequestRequestObject struct {
-	Body *CreateFollowRequestJSONRequestBody
+type DeleteFriendRequestObject struct {
+	Body *DeleteFriendJSONRequestBody
 }
 
-type CreateFollowRequestResponseObject interface {
-	VisitCreateFollowRequestResponse(w http.ResponseWriter) error
+type DeleteFriendResponseObject interface {
+	VisitDeleteFriendResponse(w http.ResponseWriter) error
 }
 
-type CreateFollowRequest200Response struct {
+type DeleteFriend204Response struct {
 }
 
-func (response CreateFollowRequest200Response) VisitCreateFollowRequestResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type CreateFollowRequestdefaultResponse struct {
-	StatusCode int
-}
-
-func (response CreateFollowRequestdefaultResponse) VisitCreateFollowRequestResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type UpdateFollowRequestRequestObject struct {
-	Body *UpdateFollowRequestJSONRequestBody
-}
-
-type UpdateFollowRequestResponseObject interface {
-	VisitUpdateFollowRequestResponse(w http.ResponseWriter) error
-}
-
-type UpdateFollowRequest200Response struct {
-}
-
-func (response UpdateFollowRequest200Response) VisitUpdateFollowRequestResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type UpdateFollowRequestdefaultResponse struct {
-	StatusCode int
-}
-
-func (response UpdateFollowRequestdefaultResponse) VisitUpdateFollowRequestResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type DeleteFollowerRequestObject struct {
-	Body *DeleteFollowerJSONRequestBody
-}
-
-type DeleteFollowerResponseObject interface {
-	VisitDeleteFollowerResponse(w http.ResponseWriter) error
-}
-
-type DeleteFollower204Response struct {
-}
-
-func (response DeleteFollower204Response) VisitDeleteFollowerResponse(w http.ResponseWriter) error {
+func (response DeleteFriend204Response) VisitDeleteFriendResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
 }
 
-type DeleteFollowerdefaultResponse struct {
+type DeleteFrienddefaultResponse struct {
 	StatusCode int
 }
 
-func (response DeleteFollowerdefaultResponse) VisitDeleteFollowerResponse(w http.ResponseWriter) error {
+func (response DeleteFrienddefaultResponse) VisitDeleteFriendResponse(w http.ResponseWriter) error {
 	w.WriteHeader(response.StatusCode)
 	return nil
 }
 
-type FindFollowersRequestObject struct {
-	Body *FindFollowersJSONRequestBody
+type GetFriendsRequestObject struct {
 }
 
-type FindFollowersResponseObject interface {
-	VisitFindFollowersResponse(w http.ResponseWriter) error
+type GetFriendsResponseObject interface {
+	VisitGetFriendsResponse(w http.ResponseWriter) error
 }
 
-type FindFollowers200JSONResponse FindFriendsResponse
+type GetFriends200JSONResponse FindFriendsResponse
 
-func (response FindFollowers200JSONResponse) VisitFindFollowersResponse(w http.ResponseWriter) error {
+func (response GetFriends200JSONResponse) VisitGetFriendsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type FindFollowersdefaultResponse struct {
+type GetFriendsdefaultResponse struct {
 	StatusCode int
 }
 
-func (response FindFollowersdefaultResponse) VisitFindFollowersResponse(w http.ResponseWriter) error {
+func (response GetFriendsdefaultResponse) VisitGetFriendsResponse(w http.ResponseWriter) error {
 	w.WriteHeader(response.StatusCode)
 	return nil
 }
 
-type FindFollowerRequestsRequestObject struct {
-	Body *FindFollowerRequestsJSONRequestBody
+type GetLocationsOfFriendsRequestObject struct {
 }
 
-type FindFollowerRequestsResponseObject interface {
-	VisitFindFollowerRequestsResponse(w http.ResponseWriter) error
+type GetLocationsOfFriendsResponseObject interface {
+	VisitGetLocationsOfFriendsResponse(w http.ResponseWriter) error
 }
 
-type FindFollowerRequests200JSONResponse FindFriendsResponse
+type GetLocationsOfFriends200JSONResponse GetFriendLocationsResponse
 
-func (response FindFollowerRequests200JSONResponse) VisitFindFollowerRequestsResponse(w http.ResponseWriter) error {
+func (response GetLocationsOfFriends200JSONResponse) VisitGetLocationsOfFriendsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type FindFollowerRequestsdefaultResponse struct {
+type GetLocationsOfFriendsdefaultResponse struct {
 	StatusCode int
 }
 
-func (response FindFollowerRequestsdefaultResponse) VisitFindFollowerRequestsResponse(w http.ResponseWriter) error {
+func (response GetLocationsOfFriendsdefaultResponse) VisitGetLocationsOfFriendsResponse(w http.ResponseWriter) error {
 	w.WriteHeader(response.StatusCode)
 	return nil
 }
 
-type DeleteFollowingRequestObject struct {
-	Body *DeleteFollowingJSONRequestBody
+type CreateFriendRequestRequestObject struct {
+	Body *CreateFriendRequestJSONRequestBody
 }
 
-type DeleteFollowingResponseObject interface {
-	VisitDeleteFollowingResponse(w http.ResponseWriter) error
+type CreateFriendRequestResponseObject interface {
+	VisitCreateFriendRequestResponse(w http.ResponseWriter) error
 }
 
-type DeleteFollowing204Response struct {
+type CreateFriendRequest200Response struct {
 }
 
-func (response DeleteFollowing204Response) VisitDeleteFollowingResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
+func (response CreateFriendRequest200Response) VisitCreateFriendRequestResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
 	return nil
 }
 
-type DeleteFollowingdefaultResponse struct {
+type CreateFriendRequestdefaultResponse struct {
 	StatusCode int
 }
 
-func (response DeleteFollowingdefaultResponse) VisitDeleteFollowingResponse(w http.ResponseWriter) error {
+func (response CreateFriendRequestdefaultResponse) VisitCreateFriendRequestResponse(w http.ResponseWriter) error {
 	w.WriteHeader(response.StatusCode)
 	return nil
 }
 
-type FindFollowingRequestObject struct {
-	Body *FindFollowingJSONRequestBody
+type GetFriendRequestsRequestObject struct {
 }
 
-type FindFollowingResponseObject interface {
-	VisitFindFollowingResponse(w http.ResponseWriter) error
+type GetFriendRequestsResponseObject interface {
+	VisitGetFriendRequestsResponse(w http.ResponseWriter) error
 }
 
-type FindFollowing200JSONResponse FindFriendsResponse
+type GetFriendRequests200JSONResponse FindFriendsResponse
 
-func (response FindFollowing200JSONResponse) VisitFindFollowingResponse(w http.ResponseWriter) error {
+func (response GetFriendRequests200JSONResponse) VisitGetFriendRequestsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type FindFollowingdefaultResponse struct {
+type GetFriendRequestsdefaultResponse struct {
 	StatusCode int
 }
 
-func (response FindFollowingdefaultResponse) VisitFindFollowingResponse(w http.ResponseWriter) error {
+func (response GetFriendRequestsdefaultResponse) VisitGetFriendRequestsResponse(w http.ResponseWriter) error {
 	w.WriteHeader(response.StatusCode)
 	return nil
 }
 
-type UpdateLocationsOfFollowedUsersRequestObject struct {
-	Body *UpdateLocationsOfFollowedUsersJSONRequestBody
+type UpdateFriendRequestRequestObject struct {
+	Body *UpdateFriendRequestJSONRequestBody
 }
 
-type UpdateLocationsOfFollowedUsersResponseObject interface {
-	VisitUpdateLocationsOfFollowedUsersResponse(w http.ResponseWriter) error
+type UpdateFriendRequestResponseObject interface {
+	VisitUpdateFriendRequestResponse(w http.ResponseWriter) error
 }
 
-type UpdateLocationsOfFollowedUsers200JSONResponse UpdateFollowedUserLocationsResponse
+type UpdateFriendRequest200Response struct {
+}
 
-func (response UpdateLocationsOfFollowedUsers200JSONResponse) VisitUpdateLocationsOfFollowedUsersResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
+func (response UpdateFriendRequest200Response) VisitUpdateFriendRequestResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
+	return nil
 }
 
-type UpdateLocationsOfFollowedUsersdefaultResponse struct {
+type UpdateFriendRequestdefaultResponse struct {
 	StatusCode int
 }
 
-func (response UpdateLocationsOfFollowedUsersdefaultResponse) VisitUpdateLocationsOfFollowedUsersResponse(w http.ResponseWriter) error {
+func (response UpdateFriendRequestdefaultResponse) VisitUpdateFriendRequestResponse(w http.ResponseWriter) error {
 	w.WriteHeader(response.StatusCode)
 	return nil
 }
@@ -716,12 +581,13 @@ type LoginOrSignupResponseObject interface {
 	VisitLoginOrSignupResponse(w http.ResponseWriter) error
 }
 
-type LoginOrSignup200Response struct {
-}
+type LoginOrSignup200JSONResponse LoginResponse
 
-func (response LoginOrSignup200Response) VisitLoginOrSignupResponse(w http.ResponseWriter) error {
+func (response LoginOrSignup200JSONResponse) VisitLoginOrSignupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type LoginOrSignupdefaultResponse struct {
@@ -762,29 +628,23 @@ func (response FindUsersdefaultResponse) VisitFindUsersResponse(w http.ResponseW
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
-	// (POST /follow/request)
-	CreateFollowRequest(ctx context.Context, request CreateFollowRequestRequestObject) (CreateFollowRequestResponseObject, error)
+	// (DELETE /friends)
+	DeleteFriend(ctx context.Context, request DeleteFriendRequestObject) (DeleteFriendResponseObject, error)
 
-	// (POST /follow/response)
-	UpdateFollowRequest(ctx context.Context, request UpdateFollowRequestRequestObject) (UpdateFollowRequestResponseObject, error)
+	// (GET /friends)
+	GetFriends(ctx context.Context, request GetFriendsRequestObject) (GetFriendsResponseObject, error)
 
-	// (DELETE /followers)
-	DeleteFollower(ctx context.Context, request DeleteFollowerRequestObject) (DeleteFollowerResponseObject, error)
+	// (GET /friends/locations)
+	GetLocationsOfFriends(ctx context.Context, request GetLocationsOfFriendsRequestObject) (GetLocationsOfFriendsResponseObject, error)
 
-	// (POST /followers)
-	FindFollowers(ctx context.Context, request FindFollowersRequestObject) (FindFollowersResponseObject, error)
+	// (POST /friends/request)
+	CreateFriendRequest(ctx context.Context, request CreateFriendRequestRequestObject) (CreateFriendRequestResponseObject, error)
 
-	// (POST /followers/requests)
-	FindFollowerRequests(ctx context.Context, request FindFollowerRequestsRequestObject) (FindFollowerRequestsResponseObject, error)
+	// (GET /friends/requests)
+	GetFriendRequests(ctx context.Context, request GetFriendRequestsRequestObject) (GetFriendRequestsResponseObject, error)
 
-	// (DELETE /following)
-	DeleteFollowing(ctx context.Context, request DeleteFollowingRequestObject) (DeleteFollowingResponseObject, error)
-
-	// (POST /following)
-	FindFollowing(ctx context.Context, request FindFollowingRequestObject) (FindFollowingResponseObject, error)
-
-	// (POST /following/locations)
-	UpdateLocationsOfFollowedUsers(ctx context.Context, request UpdateLocationsOfFollowedUsersRequestObject) (UpdateLocationsOfFollowedUsersResponseObject, error)
+	// (POST /friends/response)
+	UpdateFriendRequest(ctx context.Context, request UpdateFriendRequestRequestObject) (UpdateFriendRequestResponseObject, error)
 
 	// (POST /login)
 	LoginOrSignup(ctx context.Context, request LoginOrSignupRequestObject) (LoginOrSignupResponseObject, error)
@@ -822,11 +682,11 @@ type strictHandler struct {
 	options     StrictHTTPServerOptions
 }
 
-// CreateFollowRequest operation middleware
-func (sh *strictHandler) CreateFollowRequest(w http.ResponseWriter, r *http.Request) {
-	var request CreateFollowRequestRequestObject
+// DeleteFriend operation middleware
+func (sh *strictHandler) DeleteFriend(w http.ResponseWriter, r *http.Request) {
+	var request DeleteFriendRequestObject
 
-	var body CreateFollowRequestJSONRequestBody
+	var body DeleteFriendJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -834,18 +694,18 @@ func (sh *strictHandler) CreateFollowRequest(w http.ResponseWriter, r *http.Requ
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.CreateFollowRequest(ctx, request.(CreateFollowRequestRequestObject))
+		return sh.ssi.DeleteFriend(ctx, request.(DeleteFriendRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "CreateFollowRequest")
+		handler = middleware(handler, "DeleteFriend")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(CreateFollowRequestResponseObject); ok {
-		if err := validResponse.VisitCreateFollowRequestResponse(w); err != nil {
+	} else if validResponse, ok := response.(DeleteFriendResponseObject); ok {
+		if err := validResponse.VisitDeleteFriendResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -853,30 +713,23 @@ func (sh *strictHandler) CreateFollowRequest(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// UpdateFollowRequest operation middleware
-func (sh *strictHandler) UpdateFollowRequest(w http.ResponseWriter, r *http.Request) {
-	var request UpdateFollowRequestRequestObject
-
-	var body UpdateFollowRequestJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
+// GetFriends operation middleware
+func (sh *strictHandler) GetFriends(w http.ResponseWriter, r *http.Request) {
+	var request GetFriendsRequestObject
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.UpdateFollowRequest(ctx, request.(UpdateFollowRequestRequestObject))
+		return sh.ssi.GetFriends(ctx, request.(GetFriendsRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "UpdateFollowRequest")
+		handler = middleware(handler, "GetFriends")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(UpdateFollowRequestResponseObject); ok {
-		if err := validResponse.VisitUpdateFollowRequestResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetFriendsResponseObject); ok {
+		if err := validResponse.VisitGetFriendsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -884,30 +737,23 @@ func (sh *strictHandler) UpdateFollowRequest(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// DeleteFollower operation middleware
-func (sh *strictHandler) DeleteFollower(w http.ResponseWriter, r *http.Request) {
-	var request DeleteFollowerRequestObject
-
-	var body DeleteFollowerJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
+// GetLocationsOfFriends operation middleware
+func (sh *strictHandler) GetLocationsOfFriends(w http.ResponseWriter, r *http.Request) {
+	var request GetLocationsOfFriendsRequestObject
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteFollower(ctx, request.(DeleteFollowerRequestObject))
+		return sh.ssi.GetLocationsOfFriends(ctx, request.(GetLocationsOfFriendsRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteFollower")
+		handler = middleware(handler, "GetLocationsOfFriends")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(DeleteFollowerResponseObject); ok {
-		if err := validResponse.VisitDeleteFollowerResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetLocationsOfFriendsResponseObject); ok {
+		if err := validResponse.VisitGetLocationsOfFriendsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -915,11 +761,11 @@ func (sh *strictHandler) DeleteFollower(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// FindFollowers operation middleware
-func (sh *strictHandler) FindFollowers(w http.ResponseWriter, r *http.Request) {
-	var request FindFollowersRequestObject
+// CreateFriendRequest operation middleware
+func (sh *strictHandler) CreateFriendRequest(w http.ResponseWriter, r *http.Request) {
+	var request CreateFriendRequestRequestObject
 
-	var body FindFollowersJSONRequestBody
+	var body CreateFriendRequestJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -927,18 +773,18 @@ func (sh *strictHandler) FindFollowers(w http.ResponseWriter, r *http.Request) {
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.FindFollowers(ctx, request.(FindFollowersRequestObject))
+		return sh.ssi.CreateFriendRequest(ctx, request.(CreateFriendRequestRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "FindFollowers")
+		handler = middleware(handler, "CreateFriendRequest")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(FindFollowersResponseObject); ok {
-		if err := validResponse.VisitFindFollowersResponse(w); err != nil {
+	} else if validResponse, ok := response.(CreateFriendRequestResponseObject); ok {
+		if err := validResponse.VisitCreateFriendRequestResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -946,30 +792,23 @@ func (sh *strictHandler) FindFollowers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// FindFollowerRequests operation middleware
-func (sh *strictHandler) FindFollowerRequests(w http.ResponseWriter, r *http.Request) {
-	var request FindFollowerRequestsRequestObject
-
-	var body FindFollowerRequestsJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
+// GetFriendRequests operation middleware
+func (sh *strictHandler) GetFriendRequests(w http.ResponseWriter, r *http.Request) {
+	var request GetFriendRequestsRequestObject
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.FindFollowerRequests(ctx, request.(FindFollowerRequestsRequestObject))
+		return sh.ssi.GetFriendRequests(ctx, request.(GetFriendRequestsRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "FindFollowerRequests")
+		handler = middleware(handler, "GetFriendRequests")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(FindFollowerRequestsResponseObject); ok {
-		if err := validResponse.VisitFindFollowerRequestsResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetFriendRequestsResponseObject); ok {
+		if err := validResponse.VisitGetFriendRequestsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -977,11 +816,11 @@ func (sh *strictHandler) FindFollowerRequests(w http.ResponseWriter, r *http.Req
 	}
 }
 
-// DeleteFollowing operation middleware
-func (sh *strictHandler) DeleteFollowing(w http.ResponseWriter, r *http.Request) {
-	var request DeleteFollowingRequestObject
+// UpdateFriendRequest operation middleware
+func (sh *strictHandler) UpdateFriendRequest(w http.ResponseWriter, r *http.Request) {
+	var request UpdateFriendRequestRequestObject
 
-	var body DeleteFollowingJSONRequestBody
+	var body UpdateFriendRequestJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -989,80 +828,18 @@ func (sh *strictHandler) DeleteFollowing(w http.ResponseWriter, r *http.Request)
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteFollowing(ctx, request.(DeleteFollowingRequestObject))
+		return sh.ssi.UpdateFriendRequest(ctx, request.(UpdateFriendRequestRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteFollowing")
+		handler = middleware(handler, "UpdateFriendRequest")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(DeleteFollowingResponseObject); ok {
-		if err := validResponse.VisitDeleteFollowingResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// FindFollowing operation middleware
-func (sh *strictHandler) FindFollowing(w http.ResponseWriter, r *http.Request) {
-	var request FindFollowingRequestObject
-
-	var body FindFollowingJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.FindFollowing(ctx, request.(FindFollowingRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "FindFollowing")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(FindFollowingResponseObject); ok {
-		if err := validResponse.VisitFindFollowingResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// UpdateLocationsOfFollowedUsers operation middleware
-func (sh *strictHandler) UpdateLocationsOfFollowedUsers(w http.ResponseWriter, r *http.Request) {
-	var request UpdateLocationsOfFollowedUsersRequestObject
-
-	var body UpdateLocationsOfFollowedUsersJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.UpdateLocationsOfFollowedUsers(ctx, request.(UpdateLocationsOfFollowedUsersRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "UpdateLocationsOfFollowedUsers")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(UpdateLocationsOfFollowedUsersResponseObject); ok {
-		if err := validResponse.VisitUpdateLocationsOfFollowedUsersResponse(w); err != nil {
+	} else if validResponse, ok := response.(UpdateFriendRequestResponseObject); ok {
+		if err := validResponse.VisitUpdateFriendRequestResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
