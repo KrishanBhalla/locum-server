@@ -2,6 +2,7 @@ package models
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"strings"
 	"time"
@@ -23,7 +24,9 @@ func NewUserToken(userId string) UserToken {
 
 	rawTokenBytes := append([]byte(SECRET_PEPPER), userId...)
 	rawTokenBytes = append(rawTokenBytes, []byte(timeNow.String())...)
-	token := string(sha256.New().Sum(rawTokenBytes))
+	h := sha256.New()
+	h.Write([]byte(rawTokenBytes))
+	token := hex.EncodeToString(h.Sum(nil))
 
 	return UserToken{UserId: userId, Token: token, CreationTime: timeNow}
 }

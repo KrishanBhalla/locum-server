@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/KrishanBhalla/locum-server/api/spec"
+	"github.com/dgraph-io/badger"
 )
 
 func GetFriends(ctx context.Context, request spec.GetFriendsRequestObject) (spec.GetFriendsResponseObject, error) {
@@ -24,7 +25,7 @@ func GetFriends(ctx context.Context, request spec.GetFriendsRequestObject) (spec
 	// Process
 
 	friends, err := services.UserFriends.ByUserID(userToken.UserId)
-	if err != nil {
+	if err != nil && err != badger.ErrKeyNotFound {
 		return internalServerError, err
 	}
 	// Create Response

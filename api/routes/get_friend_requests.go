@@ -31,9 +31,9 @@ func GetFriendRequests(ctx context.Context, request spec.GetFriendRequestsReques
 		return nil, err
 	}
 
-	followerRequests := friends.FriendRequests
-	response := make([]spec.UserResponse, 0, len(followerRequests))
-	for _, f := range followerRequests {
+	friendRequests := friends.FriendRequests
+	response := make(spec.GetFriendRequests200JSONResponse, 0, len(friendRequests))
+	for _, f := range friendRequests {
 
 		follower, err := userService.ByID(f.UserId)
 		if err != nil {
@@ -43,10 +43,5 @@ func GetFriendRequests(ctx context.Context, request spec.GetFriendRequestsReques
 		}
 	}
 
-	type UserResponse struct {
-		FullName string `json:"fullName"`
-		UserId   string `json:"userId"`
-	}
-
-	return spec.GetFriendRequests200JSONResponse{}, nil
+	return response, nil
 }

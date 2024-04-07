@@ -83,6 +83,7 @@ func (db *userDB) Delete(userId string) error {
 
 // Update implements UserDB.
 func (db *userDB) Update(user User) error {
+
 	oldUser, err := db.ByID(user.Id)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return err
@@ -95,7 +96,6 @@ func (db *userDB) Update(user User) error {
 		user.CreationTime = time.Now()
 		user.LastLoginTime = user.CreationTime
 	}
-
 	err = db.db.Update(func(txn *badger.Txn) error {
 
 		userBytes, err := json.Marshal(user)

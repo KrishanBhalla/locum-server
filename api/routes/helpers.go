@@ -24,14 +24,17 @@ func validateServices(ctx context.Context) (*services.Services, error) {
 func validateToken(ctx context.Context, services *services.Services) (*models.UserToken, error) {
 	token, authError := tokens.FromContext(ctx)
 	reqId := chiMw.GetReqID(ctx)
+	fmt.Println("CONTEXT")
 
 	if authError != nil {
+		fmt.Println("Auth Error", authError.Error())
 		return nil, authError
 	}
 
-	userToken, err := services.UserToken.ByToken(token)
-
+	userToken, err := services.UserToken.ByToken(token.Token)
+	fmt.Println("HAVE USER TOKEN")
 	if err != nil {
+		fmt.Println("Err", err.Error())
 		return nil, errors.New(fmt.Sprintf("reqId: %s. Error %s", reqId, err.Error()))
 	}
 

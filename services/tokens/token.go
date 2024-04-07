@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/KrishanBhalla/locum-server/models"
 	"github.com/KrishanBhalla/locum-server/services"
 )
 
@@ -31,9 +32,11 @@ func NewContext(ctx context.Context, token string, userTokenService services.Use
 	return ctx
 }
 
-func FromContext(ctx context.Context) (string, error) {
-	token := ctx.Value(TokenCtxKey).(string)
-	err := ctx.Value(ErrorCtxKey).(error)
-
-	return token, err
+func FromContext(ctx context.Context) (models.UserToken, error) {
+	token := ctx.Value(TokenCtxKey).(models.UserToken)
+	err := ctx.Value(ErrorCtxKey)
+	if err != nil {
+		return token, err.(error)
+	}
+	return token, nil
 }

@@ -34,9 +34,10 @@ func SignupOrLogin(ctx context.Context, request spec.LoginOrSignupRequestObject)
 			req.FullName = &defaultNilValue
 		}
 		if req.Email == nil {
-			req.FullName = &defaultNilValue
+			req.Email = &defaultNilValue
 		}
-		err := userService.Create(models.User{Id: req.UserId, FullName: *req.FullName, Email: *req.Email})
+		user = models.User{Id: req.UserId, Email: *req.Email, FullName: *req.FullName}
+		err := userService.Create(user)
 		if err != nil {
 			return internalServerError, errors.New(fmt.Sprintf("Error creating user (SignupOrLogin) %s", reqId))
 		}

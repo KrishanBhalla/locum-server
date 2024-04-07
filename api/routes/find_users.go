@@ -21,7 +21,6 @@ func FindUsers(ctx context.Context, request spec.FindUsersRequestObject) (spec.F
 	}
 
 	// Process
-	fmt.Println(request.Body.QueryString)
 	foundUsers, err := services.User.Query(request.Body.QueryString)
 	if err != nil {
 		return internalServerError, err

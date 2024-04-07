@@ -29,11 +29,7 @@ func CreateFriendRequest(ctx context.Context, request spec.CreateFriendRequestRe
 	userFriends := services.UserFriends
 	err = userFriends.AddFriendRequest(userToBefriend, models.FriendRequest{UserId: userId, Timestamp: reqTime})
 	if err != nil {
-		return nil, err
-	}
-	err = userFriends.AddFriendRequest(userId, models.FriendRequest{UserId: userToBefriend, Timestamp: reqTime})
-	if err != nil {
-		return nil, err
+		return internalServerError, err
 	}
 
 	return spec.CreateFriendRequest200Response{}, nil

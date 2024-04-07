@@ -19,10 +19,10 @@ func concatenateFriendRequests(initialRequests []FriendRequest, newRequests ...F
 		requestMap[f.UserId] = f.Timestamp
 	}
 
-	for _, followReq := range newRequests {
-		reqTs, ok := requestMap[followReq.UserId]
-		if !ok || (ok && followReq.Timestamp.Before(reqTs)) {
-			requestMap[followReq.UserId] = followReq.Timestamp
+	for _, friendReq := range newRequests {
+		reqTs, ok := requestMap[friendReq.UserId]
+		if !ok || (ok && friendReq.Timestamp.Before(reqTs)) {
+			requestMap[friendReq.UserId] = friendReq.Timestamp
 		}
 	}
 	result := make([]FriendRequest, 0, len(requestMap))
@@ -33,8 +33,17 @@ func concatenateFriendRequests(initialRequests []FriendRequest, newRequests ...F
 }
 
 func removeFriendRequest(original []FriendRequest, key string) []FriendRequest {
+	if len(original) == 1 {
+		if original[0].UserId == key {
+			return make([]FriendRequest, 0)
+		}
+		return original
+	}
 	for i, v := range original {
 		if v.UserId == key {
+			if i == 0 {
+				return original[1:]
+			}
 			if i < len(original) {
 				return append(original[:i], original[i+1:]...)
 			} else {
@@ -48,7 +57,7 @@ func removeFriendRequest(original []FriendRequest, key string) []FriendRequest {
 type UserFriends struct {
 	UserId         string          `json:"id"`
 	FriendIds      []string        `json:"friendIds"`
-	FriendRequests []FriendRequest `json:"followRequests"`
+	FriendRequests []FriendRequest `json:"friendRequests"`
 }
 
 type UserFriendsDB interface {
@@ -62,7 +71,7 @@ type UserFriendsDB interface {
 	AddFriend(userId, friendId string) error
 
 	RemoveFriendRequest(userId, friendId string) error
-	AddFriendRequest(userId string, followRequest FriendRequest) error
+	AddFriendRequest(userId string, friendRequest FriendRequest) error
 
 	Update(userFriends UserFriends) error
 	Delete(userId string) error
@@ -149,9 +158,18 @@ func (db *userFriendsDB) AddFriend(userId, friendId string) error {
 	if err != nil && err != badger.ErrKeyNotFound {
 		return err
 	}
-
 	userFriends.FriendIds = appendToSliceWithoutDuplicates(userFriends.FriendIds, friendId)
-	return db.Update(userFriends)
+
+	friendFriends, err := db.ByUserID(friendId)
+	if err != nil && err != badger.ErrKeyNotFound {
+		return err
+	}
+	friendFriends.FriendIds = appendToSliceWithoutDuplicates(friendFriends.FriendIds, userId)
+	err = db.Update(userFriends)
+	if err != nil {
+		return err
+	}
+	return db.Update(friendFriends)
 }
 
 // Follow reqeusts
@@ -172,6 +190,8 @@ func (db *userFriendsDB) AddFriendRequest(userId string, friendRequest FriendReq
 	userFriends, err := db.ByUserID(userId)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return err
+	} else if err == badger.ErrKeyNotFound {
+		userFriends = UserFriends{UserId: userId, FriendIds: make([]string, 0), FriendRequests: make([]FriendRequest, 0)}
 	}
 
 	userFriends.FriendRequests = concatenateFriendRequests(userFriends.FriendRequests, friendRequest)

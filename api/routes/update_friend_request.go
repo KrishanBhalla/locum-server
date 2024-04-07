@@ -23,20 +23,20 @@ func UpdateFriendRequest(ctx context.Context, request spec.UpdateFriendRequestRe
 
 	// Process
 	userId := userToken.UserId
-	requestingUser := request.Body.FriendId
+	friendId := request.Body.FriendId
 	requestAccepted := request.Body.Accept
 
 	userFriends := services.UserFriends
 
 	if requestAccepted {
-		err = userFriends.AddFriend(userId, requestingUser)
+		err = userFriends.AddFriend(userId, friendId)
 	}
 	if err != nil {
-		return nil, err
+		return internalServerError, err
 	}
-	err = userFriends.RemoveFriendRequest(userId, requestingUser)
+	err = userFriends.RemoveFriendRequest(userId, friendId)
 	if err != nil {
-		return nil, err
+		return internalServerError, err
 	}
 
 	return spec.UpdateFriendRequest200Response{}, nil

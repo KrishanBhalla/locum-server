@@ -29,6 +29,7 @@ func main() {
 		services.WithUser(),
 		services.WithUserFriends(),
 		services.WithUserLocation(),
+		services.WithUserToken(),
 	)
 	defer services.Close()
 	must(err)
