@@ -46,7 +46,7 @@ func main() {
 	r.Use(chiMw.Timeout(60 * time.Second))
 	r.Use(middleware.AddServices(services))
 
-	setupRoutes(r, *services)
+	setupRoutes(r)
 
 	// Listen And Serve
 	fmt.Println("Listening on", port)
@@ -55,7 +55,7 @@ func main() {
 	must(err)
 }
 
-func setupRoutes(r *chi.Mux, services services.Services) {
+func setupRoutes(r *chi.Mux) {
 
 	r.MethodFunc(http.MethodGet, "/test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Successful test")

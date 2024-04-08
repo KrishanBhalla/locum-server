@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -39,6 +40,7 @@ func UpdateLocation(ctx context.Context, request spec.UpdateLocationRequestObjec
 		},
 	})
 	if err != nil {
+		fmt.Println(err.Error())
 		return internalServerError, err
 	}
 

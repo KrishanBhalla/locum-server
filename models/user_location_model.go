@@ -75,11 +75,11 @@ func (db *userLocationDB) Create(userLocation UserLocation) error {
 func (db *userLocationDB) Append(userLocation UserLocation) error {
 
 	existingUserLocation, err := db.ByUserID(userLocation.UserId)
-	if err != nil {
+	if err != nil && err != badger.ErrKeyNotFound {
 		return err
-	}
-
-	userLocation.GeoTimes = append(existingUserLocation.GeoTimes, userLocation.GeoTimes...)
+	} else if err == nil {
+		userLocation.GeoTimes = append(existingUserLocation.GeoTimes, userLocation.GeoTimes...)
+	} // key not found vacuosly works
 
 	return db.Update(userLocation)
 }
