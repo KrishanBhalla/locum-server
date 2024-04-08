@@ -66,8 +66,12 @@ func (db *userDB) Create(user User) error {
 // Delete implements UserDB.
 func (db *userDB) Delete(userId string) error {
 	user, err := db.ByID(userId)
-	if err != nil {
+	if err != nil && err != badger.ErrKeyNotFound {
 		return err
+	}
+
+	if err == badger.ErrKeyNotFound {
+		return nil
 	}
 
 	err = db.db.Update(func(txn *badger.Txn) error {

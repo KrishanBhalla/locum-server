@@ -47,12 +47,10 @@ func TestCanDeleteUser(t *testing.T) {
 
 	runBadgerTest(t, func(t *testing.T, db *badger.DB) {
 		userDb := NewUserDB(db)
-		err := userDb.Delete(TEST_USER_ID)
-		require.ErrorIs(t, err, badger.ErrKeyNotFound, "Failed to return ErrKeyNotFound when deleting")
 
 		userDb.Create(TEST_USER)
 
-		err = userDb.Delete(TEST_USER_ID)
+		err := userDb.Delete(TEST_USER_ID)
 		require.NoError(t, err, "Failed to delete test user")
 	})
 }
