@@ -8,7 +8,7 @@ import (
 	"github.com/KrishanBhalla/locum-server/models"
 	"github.com/KrishanBhalla/locum-server/services"
 	"github.com/KrishanBhalla/locum-server/services/tokens"
-	chiMw "github.com/go-chi/chi/middleware"
+	chiMw "github.com/go-chi/chi/v5/middleware"
 )
 
 func validateServices(ctx context.Context) (*services.Services, error) {

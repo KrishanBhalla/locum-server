@@ -8,8 +8,8 @@ import (
 
 	"github.com/KrishanBhalla/locum-server/api/spec"
 	"github.com/KrishanBhalla/locum-server/models"
-	"github.com/dgraph-io/badger"
-	chiMw "github.com/go-chi/chi/middleware"
+	badger "github.com/dgraph-io/badger/v4"
+	chiMw "github.com/go-chi/chi/v5/middleware"
 )
 
 func SignupOrLogin(ctx context.Context, request spec.LoginOrSignupRequestObject) (spec.LoginOrSignupResponseObject, error) {

@@ -9,8 +9,8 @@ import (
 	"github.com/KrishanBhalla/locum-server/api/spec"
 	"github.com/KrishanBhalla/locum-server/middleware"
 	"github.com/KrishanBhalla/locum-server/services"
-	"github.com/go-chi/chi"
-	chiMw "github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	chiMw "github.com/go-chi/chi/v5/middleware"
 )
 
 const (

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/dgraph-io/badger"
+	badger "github.com/dgraph-io/badger/v4"
 )
 
 // ServicesConfig allows for dynamic adding of services

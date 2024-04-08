@@ -1,6 +1,6 @@
 package models
 
-import "github.com/dgraph-io/badger"
+import badger "github.com/dgraph-io/badger/v4"
 
 type DbCloser interface {
 	CloseDB() error

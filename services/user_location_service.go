@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/KrishanBhalla/locum-server/models"
-	"github.com/dgraph-io/badger"
+	badger "github.com/dgraph-io/badger/v4"
 )
 
 var _ models.UserLocationDB = &userLocationService{}

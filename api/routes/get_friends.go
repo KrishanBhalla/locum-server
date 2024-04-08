@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/KrishanBhalla/locum-server/api/spec"
-	"github.com/dgraph-io/badger"
+	badger "github.com/dgraph-io/badger/v4"
 )
 
 func GetFriends(ctx context.Context, request spec.GetFriendsRequestObject) (spec.GetFriendsResponseObject, error) {

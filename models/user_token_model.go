@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgraph-io/badger"
+	badger "github.com/dgraph-io/badger/v4"
 )
 
 const SECRET_PEPPER = "locum-secret-pepper"

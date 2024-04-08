@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/KrishanBhalla/locum-server/api/spec"
-	chiMw "github.com/go-chi/chi/middleware"
+	chiMw "github.com/go-chi/chi/v5/middleware"
 )
 
 func GetLocationsOfFriends(ctx context.Context) (spec.GetLocationsOfFriendsResponseObject, error) {
