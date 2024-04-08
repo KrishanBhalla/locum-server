@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/KrishanBhalla/locum-server/api/spec"
 	"github.com/KrishanBhalla/locum-server/middleware"
 	"github.com/KrishanBhalla/locum-server/services"
-	"github.com/KrishanBhalla/locum-server/services/websocket_service"
 	"github.com/go-chi/chi"
 	chiMw "github.com/go-chi/chi/middleware"
 )
@@ -58,27 +56,12 @@ func main() {
 }
 
 func setupRoutes(r *chi.Mux, services services.Services) {
-	// Websocket
-	r.MethodFunc(http.MethodGet, "/updateLocationWs", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		serveWs(w, r, &services)
-	}))
 
 	r.MethodFunc(http.MethodGet, "/test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Successful test")
 	}))
 	r.Mount("/api", spec.Handler(spec.NewStrictHandler(&api.ServerImpl{}, []spec.StrictMiddlewareFunc{})))
 
-}
-
-func serveWs(w http.ResponseWriter, r *http.Request, services *services.Services) {
-
-	log.Println("WebSocket Endpoint Hit")
-	conn, err := websocket_service.Upgrade(w, r)
-	if err != nil {
-		log.Println(err)
-		fmt.Fprintf(w, "%+V\n", err)
-	}
-	services.UserLocation.SubscribeToLocationUpdates(conn)
 }
 
 func must(err error) {

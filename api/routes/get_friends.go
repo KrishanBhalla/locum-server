@@ -21,7 +21,6 @@ func GetFriends(ctx context.Context, request spec.GetFriendsRequestObject) (spec
 	if err != nil {
 		return spec.UnauthorizedErrorResponse{}, err
 	}
-
 	// Process
 
 	friends, err := services.UserFriends.ByUserID(userToken.UserId)
@@ -32,7 +31,7 @@ func GetFriends(ctx context.Context, request spec.GetFriendsRequestObject) (spec
 	followers := make(spec.GetFriends200JSONResponse, 0, len(friends.FriendIds))
 	for _, follower := range friends.FriendIds {
 		user, err := services.User.ByID(follower)
-		if err == nil {
+		if err == nil && user.Id != userToken.UserId { // do not return yourself
 			followers = append(followers, spec.UserResponse{UserId: follower, FullName: user.FullName})
 		}
 	}

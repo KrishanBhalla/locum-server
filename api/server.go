@@ -10,6 +10,16 @@ import (
 type ServerImpl struct {
 }
 
+// UpdateLocation implements spec.StrictServerInterface.
+func (s *ServerImpl) UpdateLocation(ctx context.Context, request spec.UpdateLocationRequestObject) (spec.UpdateLocationResponseObject, error) {
+	return routes.UpdateLocation(ctx, request)
+}
+
+// RenameUser implements spec.StrictServerInterface.
+func (s *ServerImpl) RenameUser(ctx context.Context, request spec.RenameUserRequestObject) (spec.RenameUserResponseObject, error) {
+	return routes.RenameUser(ctx, request)
+}
+
 // FindFriendRequests implements spec.StrictServerInterface.
 func (*ServerImpl) GetFriendRequests(ctx context.Context, request spec.GetFriendRequestsRequestObject) (spec.GetFriendRequestsResponseObject, error) {
 	return routes.GetFriendRequests(ctx, request)

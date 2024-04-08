@@ -2,22 +2,23 @@ package routes
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/KrishanBhalla/locum-server/api/spec"
-	"github.com/KrishanBhalla/locum-server/services"
-	chiMw "github.com/go-chi/chi/middleware"
 )
 
 func FindUsers(ctx context.Context, request spec.FindUsersRequestObject) (spec.FindUsersResponseObject, error) {
 	/// setup
-	services, ok := services.FromContext(ctx)
-	reqId := chiMw.GetReqID(ctx)
 	internalServerError := spec.FindUsersdefaultResponse{StatusCode: http.StatusInternalServerError}
-	if !ok {
-		return internalServerError, errors.New(fmt.Sprintf("No services passed via context, reqId: %s", reqId))
+
+	services, err := validateServices(ctx)
+	if err != nil {
+		return internalServerError, err
+	}
+
+	userToken, err := validateToken(ctx, services)
+	if err != nil {
+		return spec.UnauthorizedErrorResponse{}, err
 	}
 
 	// Process
@@ -26,9 +27,11 @@ func FindUsers(ctx context.Context, request spec.FindUsersRequestObject) (spec.F
 		return internalServerError, err
 	}
 	// Create Response
-	resp := make(spec.FindUsers200JSONResponse, len(foundUsers), len(foundUsers))
-	for i, u := range foundUsers {
-		resp[i] = spec.UserResponse{UserId: u.Id, FullName: u.FullName}
+	resp := make(spec.FindUsers200JSONResponse, 0, len(foundUsers))
+	for _, u := range foundUsers {
+		if u.Id != userToken.UserId {
+			resp = append(resp, spec.UserResponse{UserId: u.Id, FullName: u.FullName})
+		}
 	}
 	return resp, nil
 }

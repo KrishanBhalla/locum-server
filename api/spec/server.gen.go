@@ -39,6 +39,13 @@ type FriendResponseRequest struct {
 // GetFriendLocationsResponse defines model for GetFriendLocationsResponse.
 type GetFriendLocationsResponse = []UserLocation
 
+// LocationUpdate The location of a the current with a timestamp given in epoch millis
+type LocationUpdate struct {
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
+	Timestamp int64   `json:"timestamp"`
+}
+
 // LoginRequest defines model for LoginRequest.
 type LoginRequest struct {
 	Email    *string `json:"email,omitempty"`
@@ -49,6 +56,11 @@ type LoginRequest struct {
 // LoginResponse defines model for LoginResponse.
 type LoginResponse struct {
 	Token string `json:"token"`
+}
+
+// RenameUserRequest defines model for RenameUserRequest.
+type RenameUserRequest struct {
+	NewName string `json:"newName"`
 }
 
 // UserLocation The location of a user with a timestamp given in epoch millis
@@ -82,6 +94,12 @@ type UpdateFriendRequestJSONRequestBody = FriendResponseRequest
 // LoginOrSignupJSONRequestBody defines body for LoginOrSignup for application/json ContentType.
 type LoginOrSignupJSONRequestBody = LoginRequest
 
+// RenameUserJSONRequestBody defines body for RenameUser for application/json ContentType.
+type RenameUserJSONRequestBody = RenameUserRequest
+
+// UpdateLocationJSONRequestBody defines body for UpdateLocation for application/json ContentType.
+type UpdateLocationJSONRequestBody = LocationUpdate
+
 // FindUsersJSONRequestBody defines body for FindUsers for application/json ContentType.
 type FindUsersJSONRequestBody = UserRequest
 
@@ -108,6 +126,12 @@ type ServerInterface interface {
 
 	// (POST /login)
 	LoginOrSignup(w http.ResponseWriter, r *http.Request)
+
+	// (POST /me/rename)
+	RenameUser(w http.ResponseWriter, r *http.Request)
+
+	// (POST /updateLocation)
+	UpdateLocation(w http.ResponseWriter, r *http.Request)
 
 	// (POST /users)
 	FindUsers(w http.ResponseWriter, r *http.Request)
@@ -149,6 +173,16 @@ func (_ Unimplemented) UpdateFriendRequest(w http.ResponseWriter, r *http.Reques
 
 // (POST /login)
 func (_ Unimplemented) LoginOrSignup(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /me/rename)
+func (_ Unimplemented) RenameUser(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /updateLocation)
+func (_ Unimplemented) UpdateLocation(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -274,6 +308,40 @@ func (siw *ServerInterfaceWrapper) LoginOrSignup(w http.ResponseWriter, r *http.
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.LoginOrSignup(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// RenameUser operation middleware
+func (siw *ServerInterfaceWrapper) RenameUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RenameUser(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// UpdateLocation operation middleware
+func (siw *ServerInterfaceWrapper) UpdateLocation(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateLocation(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -433,6 +501,12 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/login", wrapper.LoginOrSignup)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/me/rename", wrapper.RenameUser)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/updateLocation", wrapper.UpdateLocation)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/users", wrapper.FindUsers)
@@ -662,6 +736,70 @@ func (response LoginOrSignupdefaultResponse) VisitLoginOrSignupResponse(w http.R
 	return nil
 }
 
+type RenameUserRequestObject struct {
+	Body *RenameUserJSONRequestBody
+}
+
+type RenameUserResponseObject interface {
+	VisitRenameUserResponse(w http.ResponseWriter) error
+}
+
+type RenameUser200Response struct {
+}
+
+func (response RenameUser200Response) VisitRenameUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type RenameUser401Response = UnauthorizedErrorResponse
+
+func (response RenameUser401Response) VisitRenameUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type RenameUserdefaultResponse struct {
+	StatusCode int
+}
+
+func (response RenameUserdefaultResponse) VisitRenameUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(response.StatusCode)
+	return nil
+}
+
+type UpdateLocationRequestObject struct {
+	Body *UpdateLocationJSONRequestBody
+}
+
+type UpdateLocationResponseObject interface {
+	VisitUpdateLocationResponse(w http.ResponseWriter) error
+}
+
+type UpdateLocation200Response struct {
+}
+
+func (response UpdateLocation200Response) VisitUpdateLocationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type UpdateLocation401Response = UnauthorizedErrorResponse
+
+func (response UpdateLocation401Response) VisitUpdateLocationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateLocationdefaultResponse struct {
+	StatusCode int
+}
+
+func (response UpdateLocationdefaultResponse) VisitUpdateLocationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(response.StatusCode)
+	return nil
+}
+
 type FindUsersRequestObject struct {
 	Body *FindUsersJSONRequestBody
 }
@@ -718,6 +856,12 @@ type StrictServerInterface interface {
 
 	// (POST /login)
 	LoginOrSignup(ctx context.Context, request LoginOrSignupRequestObject) (LoginOrSignupResponseObject, error)
+
+	// (POST /me/rename)
+	RenameUser(ctx context.Context, request RenameUserRequestObject) (RenameUserResponseObject, error)
+
+	// (POST /updateLocation)
+	UpdateLocation(ctx context.Context, request UpdateLocationRequestObject) (UpdateLocationResponseObject, error)
 
 	// (POST /users)
 	FindUsers(ctx context.Context, request FindUsersRequestObject) (FindUsersResponseObject, error)
@@ -941,6 +1085,68 @@ func (sh *strictHandler) LoginOrSignup(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(LoginOrSignupResponseObject); ok {
 		if err := validResponse.VisitLoginOrSignupResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RenameUser operation middleware
+func (sh *strictHandler) RenameUser(w http.ResponseWriter, r *http.Request) {
+	var request RenameUserRequestObject
+
+	var body RenameUserJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RenameUser(ctx, request.(RenameUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RenameUser")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RenameUserResponseObject); ok {
+		if err := validResponse.VisitRenameUserResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateLocation operation middleware
+func (sh *strictHandler) UpdateLocation(w http.ResponseWriter, r *http.Request) {
+	var request UpdateLocationRequestObject
+
+	var body UpdateLocationJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateLocation(ctx, request.(UpdateLocationRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateLocation")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UpdateLocationResponseObject); ok {
+		if err := validResponse.VisitUpdateLocationResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

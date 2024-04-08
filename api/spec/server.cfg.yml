@@ -39,6 +39,14 @@ components:
         fullName:
           type: string
 
+    RenameUserRequest:
+      type: object
+      required:
+        - newName  
+      properties:
+        newName:
+          type: string
+    
     UserLocation:
       type: object
       description: The location of a user with a timestamp given in epoch millis
@@ -50,6 +58,22 @@ components:
       properties:
         userId:
           type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        timestamp:
+          type: integer
+          format: int64
+
+    LocationUpdate:
+      type: object
+      description: The location of a the current with a timestamp given in epoch millis
+      required:
+        - latitude
+        - longitude
+        - timestamp
+      properties:
         latitude:
           type: number
         longitude:
@@ -187,8 +211,50 @@ paths:
         default:
           description: unexpected error
    
+  /me/rename:
+
+    post:
+      
+      description: Rename yourself
+      operationId: renameUser
+      requestBody:
+        description: The New Name to assign
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenameUserRequest'
+      responses:
+        '200':
+          description: Successful rename
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          description: unexpected error
+        
+  /updateLocation:
+
+    post:
+      description: Update your location
+      operationId: updateLocation
+      requestBody:
+        description: The new geotime
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationUpdate'
+      responses:
+        '200':
+          description: Successful locationUpdate
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          description: unexpected error
+        
   /friends:
     get:
+      
       description: |
         Find all friends
       operationId: getFriends
@@ -204,8 +270,7 @@ paths:
         default:
           description: unexpected error
     delete:
-      security:
-        - bearerAuth: []
+      
       description: deletes a single friend based on the userId and friendId supplied
       operationId: deleteFriend
       requestBody:
@@ -225,6 +290,7 @@ paths:
   
   /friends/requests:
     get:
+      
       description: |
         Find all friend requests
       operationId: getFriendRequests
@@ -242,6 +308,7 @@ paths:
   
   /friends/locations:
     get:
+      
       description: | 
         Find the locations of all friends
       operationId: getLocationsOfFriends
@@ -259,6 +326,7 @@ paths:
 
   /friends/request:
     post:
+      
       description: |
         Follow a new user
       operationId: createFriendRequest
@@ -279,6 +347,7 @@ paths:
   
   /friends/response:
     post:
+      
       description: |
         Accept or reject a friend request
       operationId: updateFriendRequest
